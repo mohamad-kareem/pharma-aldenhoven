@@ -25,13 +25,13 @@ export default function Dashboard() {
 
   const cards = [
     {
-      title: "Weekly Plan",
+      title: "Schedules",
       href: "/schedule?tab=weekly",
       color: "bg-green-100",
     },
     {
-      title: "Urlaubsplanung",
-      href: "/schedule?tab=urlaub",
+      title: "Medicine Lines",
+      href: "/medicine",
       color: "bg-blue-100",
     },
     {

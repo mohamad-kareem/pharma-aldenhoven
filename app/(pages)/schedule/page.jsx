@@ -236,7 +236,7 @@ function WeeklyTab() {
   const [date, setDate] = useState(dayStart(new Date().toISOString()));
   const [shiftData, setShiftData] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
-
+  const [absences, setAbsences] = useState([]);
   useEffect(() => {
     fetch("/api/employees")
       .then((r) => r.json())
@@ -248,6 +248,18 @@ function WeeklyTab() {
       .then((r) => r.json())
       .then(setShiftData);
   }, [date]);
+  useEffect(() => {
+    fetch(`/api/urlaub?ym=${date.slice(0, 7)}`)
+      .then((r) => r.json())
+      .then(setAbsences);
+  }, [date]);
+
+  function isAbsent(empId, dateStr) {
+    const ab = absences.find(
+      (x) => x.employee?._id === empId && x.date.startsWith(dateStr)
+    );
+    return ab?.type; // "U", "K", "ZA", etc.
+  }
 
   const grouped = useMemo(
     () =>
@@ -259,6 +271,15 @@ function WeeklyTab() {
   );
 
   async function assign({ shift, line, position, employeeId }) {
+    // --- NEW: absence check ---
+    if (employeeId) {
+      const absence = isAbsent(employeeId, date);
+      if (["U", "K", "ZA"].includes(absence)) {
+        alert("⚠️ This employee is absent (" + absence + ") on this day!");
+        return; // stop assignment
+      }
+    }
+
     if (!employeeId) {
       // --- Clear assignment (DELETE) ---
       await fetch(
@@ -334,7 +355,7 @@ function WeeklyTab() {
   ];
 
   // Define the positions for the right side (first three are fixed labels)
-  const RIGHT_POSITIONS = ["Linienführer", "Maschinenführer*", "Reinraum*"];
+  const RIGHT_POSITIONS = ["Linienführer", "Maschinenführer", "Reinraum"];
 
   // Define the lines with their times
   const LINES = [
@@ -392,7 +413,7 @@ function WeeklyTab() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr>
-                    <th className="bg-gray-100 border-b border-r border-gray-300 p-1 text-md text-xs font-medium text-gray-700 uppercase">
+                    <th className="bg-gray-100 border-b border-r border-gray-300 p-0.5 text-xs  font-medium text-gray-700 uppercase">
                       Rollen
                     </th>
                   </tr>
@@ -407,7 +428,7 @@ function WeeklyTab() {
                         key={`${role}-${index}`}
                         className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
                       >
-                        <td className="border-b border-r border-gray-300 p-1 text-xs flex items-center justify-between">
+                        <td className="border-b border-r border-gray-300 p-0.5 text-xs flex items-center justify-evenly">
                           <span className="truncate">{role}</span>
                           <div className="relative flex-shrink-0">
                             <div
@@ -496,7 +517,7 @@ function WeeklyTab() {
                       key={pos}
                       className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}
                     >
-                      <td className="border-b border-r border-gray-300 p-0.5 text-xs font-medium bg-gray-50">
+                      <td className="border-b border-r border-gray-300 p-0.5 pl-1 text-xs font-medium bg-gray-50">
                         {pos}
                       </td>
                       {LINES.map((line) => {
@@ -538,22 +559,37 @@ function WeeklyTab() {
                                   >
                                     -- Clear --
                                   </div>
-                                  {options.map((emp) => (
-                                    <div
-                                      key={emp._id}
-                                      className="p-1 text-xs hover:bg-green-50 cursor-pointer"
-                                      onClick={() =>
-                                        assign({
-                                          shift: name,
-                                          line: line.name,
-                                          position: pos,
-                                          employeeId: emp._id,
-                                        })
-                                      }
-                                    >
-                                      {emp.name}
-                                    </div>
-                                  ))}
+                                  {options.map((emp) => {
+                                    const absence = isAbsent(emp._id, date);
+                                    const isUnavailable = [
+                                      "U",
+                                      "K",
+                                      "ZA",
+                                    ].includes(absence);
+
+                                    return (
+                                      <div
+                                        key={emp._id}
+                                        className={`p-1 text-xs truncate ${
+                                          isUnavailable
+                                            ? "text-gray-400 bg-gray-50 cursor-not-allowed"
+                                            : "hover:bg-green-50 cursor-pointer"
+                                        }`}
+                                        onClick={() =>
+                                          !isUnavailable &&
+                                          assign({
+                                            shift: name,
+                                            line: line.name,
+                                            position: pos,
+                                            employeeId: emp._id,
+                                          })
+                                        }
+                                      >
+                                        {emp.name}{" "}
+                                        {isUnavailable ? `(${absence})` : ""}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -612,22 +648,37 @@ function WeeklyTab() {
                                   >
                                     -- Clear --
                                   </div>
-                                  {options.map((emp) => (
-                                    <div
-                                      key={emp._id}
-                                      className="p-1 text-xs hover:bg-green-50 cursor-pointer"
-                                      onClick={() =>
-                                        assign({
-                                          shift: name,
-                                          line: line.name,
-                                          position: pos,
-                                          employeeId: emp._id,
-                                        })
-                                      }
-                                    >
-                                      {emp.name}
-                                    </div>
-                                  ))}
+                                  {options.map((emp) => {
+                                    const absence = isAbsent(emp._id, date);
+                                    const isUnavailable = [
+                                      "U",
+                                      "K",
+                                      "ZA",
+                                    ].includes(absence);
+
+                                    return (
+                                      <div
+                                        key={emp._id}
+                                        className={`p-1 text-xs truncate ${
+                                          isUnavailable
+                                            ? "text-gray-400 bg-gray-50 cursor-not-allowed"
+                                            : "hover:bg-green-50 cursor-pointer"
+                                        }`}
+                                        onClick={() =>
+                                          !isUnavailable &&
+                                          assign({
+                                            shift: name,
+                                            line: line.name,
+                                            position: pos,
+                                            employeeId: emp._id,
+                                          })
+                                        }
+                                      >
+                                        {emp.name}{" "}
+                                        {isUnavailable ? `(${absence})` : ""}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -754,11 +805,13 @@ function UrlaubsplanungTab() {
     if (res.ok) {
       setItems((prev) => {
         const without = prev.filter(
-          (x) => !(x.employee._id === empId && x.date.startsWith(dateStr))
+          (x) => !(x.employee?._id === empId && x.date.startsWith(dateStr))
         );
         return next ? [...without, data] : without;
       });
-    } else alert(data.error);
+    } else {
+      alert(data.error);
+    }
   }
 
   // compute totals for each employee (only U, ZA, K)

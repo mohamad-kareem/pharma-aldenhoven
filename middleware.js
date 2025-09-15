@@ -13,5 +13,6 @@ export const config = {
     "/dashboard/:path*",
     "/employees/:path*",
     "/admin/:path*",
+    "/medicine/:path*",
   ],
 };

@@ -38,7 +38,7 @@ export default function UserDropdown() {
       {/* Avatar Button */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white text-sm font-medium shadow-sm hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white text-sm font-medium shadow-sm hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
         aria-label="User menu"
       >
         {getUserInitials()}
@@ -56,9 +56,6 @@ export default function UserDropdown() {
         <div className="px-4 py-2 border-b border-gray-100">
           <p className="font-medium text-gray-800 truncate text-xs">
             {session.user?.name || "User"}
-          </p>
-          <p className="text-xs text-gray-500 truncate mt-1">
-            {session.user?.email || ""}
           </p>
         </div>
 

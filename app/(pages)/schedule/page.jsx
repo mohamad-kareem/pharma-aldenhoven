@@ -518,7 +518,7 @@ function WeeklyTab() {
   ];
 
   return (
-    <div className="p-2 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-2 p-2 bg-white rounded-sm border border-gray-300">
         <div>
@@ -918,7 +918,7 @@ function UrlaubsplanungTab() {
     K: "bg-yellow-400",
     F: "bg-pink-400",
     S: "bg-orange-400",
-    N: "bg-indigo-400",
+    N: "bg-black/80",
     Feiertag: "bg-purple-400",
   };
 
@@ -980,7 +980,7 @@ function UrlaubsplanungTab() {
   }, {});
 
   return (
-    <div className="p-2 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto">
       <div className="flex items-center justify-between mb-3 p-2 bg-white rounded-sm border border-gray-300">
         <h2 className="text-xl font-bold text-gray-800">Urlaubsplanung</h2>
         <div className="flex items-center gap-2 bg-blue-50 p-1 rounded-sm">

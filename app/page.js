@@ -8,15 +8,11 @@ export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Close mobile menu when clicking on a link
-  const handleLinkClick = () => {
-    setIsMenuOpen(false);
-  };
+  const handleLinkClick = () => setIsMenuOpen(false);
 
   // Add scroll effect to navbar
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -25,23 +21,21 @@ export default function LandingPage() {
     <div className="min-h-screen flex flex-col">
       {/* Navbar */}
       <header
-        className={`w-full fixed top-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-black shadow-md py-2" : " py-4"
+        className={`w-full fixed top-0 z-50 bg-transparent transition-all duration-300 ${
+          isScrolled ? "py-2" : "py-4"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center">
           {/* Logo / App name */}
           <h1
             className={`text-xl sm:text-2xl font-bold transition-colors ${
-              isScrolled || isMenuOpen
-                ? "text-[var(--color-primary)]"
-                : "text-black"
+              isScrolled ? "text-[var(--color-primary)]" : "text-white"
             }`}
           >
             Pharma Aldenhoven
           </h1>
 
-          {/* Desktop Nav links - hidden on mobile */}
+          {/* Desktop Nav links */}
           <nav className="hidden md:block">
             <ul className="flex gap-6 text-white font-medium mr-20">
               <li>
@@ -81,11 +75,7 @@ export default function LandingPage() {
 
           {/* Mobile menu button */}
           <button
-            className={`md:hidden p-2 rounded-md transition-colors ${
-              isScrolled || isMenuOpen
-                ? "text-[var(--color-primary)]"
-                : "text-black"
-            }`}
+            className="md:hidden p-2 rounded-md text-white"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -95,7 +85,6 @@ export default function LandingPage() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   strokeLinecap="round"
@@ -110,7 +99,6 @@ export default function LandingPage() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   strokeLinecap="round"
@@ -125,13 +113,13 @@ export default function LandingPage() {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-white shadow-lg">
+          <div className="md:hidden bg-black/70 backdrop-blur-md">
             <nav className="px-4 pt-2 pb-4">
-              <ul className="flex flex-col space-y-3">
+              <ul className="flex flex-col space-y-3 text-white">
                 <li>
                   <Link
                     href="/signin"
-                    className="block py-2 text-gray-700 hover:text-[var(--color-primary)] transition-colors"
+                    className="block py-2 hover:text-[var(--color-primary)] transition-colors"
                     onClick={handleLinkClick}
                   >
                     Login
@@ -140,7 +128,7 @@ export default function LandingPage() {
                 <li>
                   <Link
                     href="/signup"
-                    className="block py-2 text-gray-700 hover:text-[var(--color-primary)] transition-colors"
+                    className="block py-2 hover:text-[var(--color-primary)] transition-colors"
                     onClick={handleLinkClick}
                   >
                     Register
@@ -149,7 +137,7 @@ export default function LandingPage() {
                 <li>
                   <Link
                     href="/about"
-                    className="block py-2 text-gray-700 hover:text-[var(--color-primary)] transition-colors"
+                    className="block py-2 hover:text-[var(--color-primary)] transition-colors"
                     onClick={handleLinkClick}
                   >
                     About
@@ -158,7 +146,7 @@ export default function LandingPage() {
                 <li>
                   <Link
                     href="/contact"
-                    className="block py-2 text-gray-700 hover:text-[var(--color-primary)] transition-colors"
+                    className="block py-2 hover:text-[var(--color-primary)] transition-colors"
                     onClick={handleLinkClick}
                   >
                     Contact
@@ -181,7 +169,8 @@ export default function LandingPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/50" /> {/* dark overlay */}
+          {/* dark overlay that does not block clicks */}
+          <div className="absolute inset-0 bg-black/50 pointer-events-none" />
         </div>
 
         {/* Hero content */}

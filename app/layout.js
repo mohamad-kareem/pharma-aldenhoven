@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
         <Providers>
           <div className="min-h-screen relative">
             {/* Floating user dropdown in top-right */}
-            <div className="absolute top-4 right-4 z-50">
+            <div className="absolute top-4 right-4 z-[9999]">
               <UserDropdown />
             </div>
 

@@ -16,29 +16,23 @@ export default function UserDropdown() {
         setOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   if (!session) return null;
 
   return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef}>
+      {/* Toggle Button */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 p-1 rounded-full bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+        className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-600 text-white shadow hover:bg-green-700 transition"
         aria-label="User menu"
       >
-        <div className="w-10 h-8 rounded-full bg-white/20 flex items-center justify-center">
-          <FiUser className="w-5 h-5" />
-        </div>
+        <FiUser className="w-4 h-4" />
         <svg
-          className={`w-4 h-4 transition-transform duration-200 ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -52,48 +46,51 @@ export default function UserDropdown() {
         </svg>
       </button>
 
+      {/* Dropdown */}
       <div
-        className={`absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 overflow-hidden transition-all duration-300 ${
+        className={`absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg border border-gray-200 text-xs transition-all ${
           open
             ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-2 pointer-events-none"
+            : "opacity-0 translate-y-1 pointer-events-none"
         }`}
       >
-        <div className="p-4 border-b border-gray-100">
-          <p className="text-sm font-medium text-gray-800 truncate">
+        {/* User Info */}
+        <div className="px-3 py-2 border-b border-gray-100">
+          <p className="font-medium text-gray-800 truncate">
             {session.user?.name || "User"}
           </p>
-          <p className="text-xs text-gray-500 truncate">
+          <p className="text-[11px] text-gray-500 truncate">
             {session.user?.email || ""}
           </p>
         </div>
 
-        <div className="p-2">
+        {/* Links */}
+        <div className="py-1">
           <Link
             href="/"
-            className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition-colors duration-200 group"
+            className="flex items-center px-3 py-1 hover:bg-gray-50 text-gray-700"
             onClick={() => setOpen(false)}
           >
-            <FiHome className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" />
+            <FiHome className="w-3.5 h-3.5 mr-2 text-gray-400" />
             Home
           </Link>
-
           <Link
             href="/dashboard"
-            className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition-colors duration-200 group"
+            className="flex items-center px-3 py-1 hover:bg-gray-50 text-gray-700"
             onClick={() => setOpen(false)}
           >
-            <FiSettings className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" />
+            <FiSettings className="w-3.5 h-3.5 mr-2 text-gray-400" />
             Dashboard
           </Link>
         </div>
 
-        <div className="p-2 border-t border-gray-100">
+        {/* Logout */}
+        <div className="border-t border-gray-100">
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 group"
+            className="flex items-center w-full px-3 py-1 text-red-600 hover:bg-red-50"
           >
-            <FiLogOut className="w-4 h-4 mr-3 group-hover:animate-pulse" />
+            <FiLogOut className="w-3.5 h-3.5 mr-2" />
             Logout
           </button>
         </div>

@@ -67,145 +67,212 @@ function isoWeek(d) {
   return { week: weekNo, year: date.getFullYear() };
 }
 
-/* ---------- Employees tab ---------- */
 function EmployeesTab() {
   const [employees, setEmployees] = useState([]);
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeRole, setActiveRole] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    fetch("/api/employees")
-      .then((r) => r.json())
-      .then(setEmployees);
+    fetchEmployees();
   }, []);
 
-  async function add(e) {
-    e.preventDefault();
-    if (!name || !role) return;
-    const res = await fetch("/api/employees", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, role }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setEmployees((p) => [...p, data]);
-      setName("");
-      setRole("");
-    } else alert(data.error);
+  async function fetchEmployees() {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/employees");
+      const data = await response.json();
+      setEmployees(data);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  const grouped = useMemo(
-    () =>
-      employees.reduce((a, e) => {
-        (a[e.role] ??= []).push(e);
-        return a;
-      }, {}),
-    [employees]
-  );
+  async function addEmployee(e) {
+    e.preventDefault();
+    if (!name || !role) return;
+
+    try {
+      const res = await fetch("/api/employees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, role }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setEmployees((prev) => [...prev, data]);
+        setName("");
+        setRole("");
+      } else {
+        alert(data.error);
+      }
+    } catch (error) {
+      console.error("Error adding employee:", error);
+      alert("Failed to add employee");
+    }
+  }
+
+  async function deleteEmployee(id, name) {
+    if (!window.confirm(`Delete ${name}?`)) return;
+
+    try {
+      const res = await fetch(`/api/employees/${id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setEmployees(employees.filter((emp) => emp._id !== id));
+      } else {
+        alert("Error deleting employee");
+      }
+    } catch (error) {
+      console.error("Error deleting employee:", error);
+      alert("Failed to delete employee");
+    }
+  }
+
+  const filteredEmployees = useMemo(() => {
+    return employees.filter((employee) => {
+      const matchesRole = activeRole === "All" || employee.role === activeRole;
+      const matchesSearch = employee.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      return matchesRole && matchesSearch;
+    });
+  }, [employees, activeRole, searchTerm]);
+
+  const roleCounts = useMemo(() => {
+    return employees.reduce((acc, employee) => {
+      acc[employee.role] = (acc[employee.role] || 0) + 1;
+      return acc;
+    }, {});
+  }, [employees]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-between mb-4 p-3 bg-white rounded-sm border border-gray-300">
-        <h2 className="text-xl font-bold text-gray-800">Employees</h2>
-      </div>
-
-      <div className="bg-white rounded-sm border border-gray-300 p-4 mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">
-          Add New Employee
-        </h3>
-        <form onSubmit={add} className="flex gap-3 items-end">
-          <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Full Name
-            </label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter full name"
-              className="w-full border border-gray-300 rounded-sm p-2 text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500"
-            />
+    <div className="min-h-screen bg-gray-50 px-2  py-1">
+      <div className="w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto space-y-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">
+              Team Management
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-600">
+              {employees.length} team members
+            </p>
           </div>
-          <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Role
-            </label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full border border-gray-300 rounded-sm p-2 text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="">-- Select role --</option>
-              {ROLE_ORDER.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors">
-            Add Employee
-          </button>
-        </form>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        {ROLE_ORDER.map((r) => (
-          <div
-            key={r}
-            className="bg-white border border-gray-300 rounded-sm shadow-sm p-4"
-          >
-            <h3 className="text-green-800 font-semibold mb-3 pb-2 border-b border-gray-200 flex items-center">
+          {/* Search */}
+          <div className="relative w-full sm:w-64">
+            <span className="absolute inset-y-0 left-2 flex items-center text-gray-400">
               <svg
-                className="w-4 h-4 mr-2"
+                className="w-4 h-4"
                 fill="none"
-                stroke="currentColor"
                 viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+                stroke="currentColor"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              {r}
-              <span className="ml-2 text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                {(grouped[r] ?? []).length} employees
-              </span>
-            </h3>
-            <ul className="space-y-2">
-              {(grouped[r] ?? []).length ? (
-                grouped[r].map((e) => (
-                  <li
-                    key={e._id}
-                    className="flex items-center justify-between border-b border-gray-100 pb-2 last:border-b-0 last:pb-0"
+            </span>
+            <input
+              type="text"
+              placeholder="Search employees..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-7 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-green-500"
+            />
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex overflow-x-auto gap-2 pb-2 custom-scrollbar">
+          <button
+            onClick={() => setActiveRole("All")}
+            className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg whitespace-nowrap ${
+              activeRole === "All"
+                ? "bg-green-100 text-green-800 font-medium"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            All ({employees.length})
+          </button>
+
+          {ROLE_ORDER.filter((role) => roleCounts[role] > 0).map((role) => (
+            <button
+              key={role}
+              onClick={() => setActiveRole(role)}
+              className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg whitespace-nowrap ${
+                activeRole === role
+                  ? "bg-green-100 text-green-800 font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              {role} ({roleCounts[role] || 0})
+            </button>
+          ))}
+        </div>
+
+        {/* Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Employee List */}
+          <div className="lg:col-span-2 bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+            <div className="px-3 sm:px-6 py-2 sm:py-4 border-b border-gray-100">
+              <h2 className="font-semibold text-sm sm:text-base text-gray-800">
+                Team Members
+              </h2>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {filteredEmployees.length > 0 ? (
+                filteredEmployees.map((employee) => (
+                  <div
+                    key={employee._id}
+                    className="px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between"
                   >
-                    <span className="text-sm">{e.name}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-xs font-medium text-green-800">
+                        {employee.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {employee.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {employee.role}
+                        </div>
+                      </div>
+                    </div>
                     <button
-                      className="text-red-500 hover:text-red-700 text-xs p-1"
-                      onClick={async () => {
-                        if (window.confirm(`Delete ${e.name}?`)) {
-                          const res = await fetch(`/api/employees/${e._id}`, {
-                            method: "DELETE",
-                          });
-                          if (res.ok) {
-                            setEmployees(
-                              employees.filter((emp) => emp._id !== e._id)
-                            );
-                          } else {
-                            alert("Error deleting employee");
-                          }
-                        }
-                      }}
+                      onClick={() =>
+                        deleteEmployee(employee._id, employee.name)
+                      }
+                      className="text-gray-400 hover:text-red-500 p-1 rounded-md hover:bg-red-50"
+                      title="Delete employee"
                     >
                       <svg
                         className="w-4 h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
                           strokeLinecap="round"
@@ -215,16 +282,95 @@ function EmployeesTab() {
                         />
                       </svg>
                     </button>
-                  </li>
+                  </div>
                 ))
               ) : (
-                <li className="text-gray-400 italic text-sm py-2">
-                  No employees in this role
-                </li>
+                <div className="px-3 py-6 text-center text-sm text-gray-500">
+                  No employees found
+                </div>
               )}
-            </ul>
+            </div>
           </div>
-        ))}
+
+          {/* Add Employee Form */}
+          <div>
+            <div className="bg-white rounded-lg shadow border border-gray-200 p-4 sm:p-5 sticky top-4">
+              <h2 className="font-semibold text-gray-800 mb-4 text-sm sm:text-base">
+                Add Team Member
+              </h2>
+              <form onSubmit={addEmployee} className="space-y-4">
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter full name"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Role
+                  </label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500"
+                  >
+                    <option value="">Select a role</option>
+                    {ROLE_ORDER.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  disabled={!name || !role}
+                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-medium py-2 rounded-lg text-sm transition-colors"
+                >
+                  Add Team Member
+                </button>
+              </form>
+
+              {/* Role Distribution */}
+              <div className="mt-6 pt-4 border-t border-gray-100">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                  Team Distribution
+                </h3>
+                <div className="space-y-2">
+                  {ROLE_ORDER.map((r) => (
+                    <div key={r} className="flex items-center">
+                      <div className="w-24 text-xs sm:text-sm text-gray-600 truncate">
+                        {r}
+                      </div>
+                      <div className="flex-1 ml-2">
+                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-green-500 rounded-full"
+                            style={{
+                              width: `${
+                                ((roleCounts[r] || 0) /
+                                  Math.max(1, employees.length)) *
+                                100
+                              }%`,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="w-6 sm:w-8 text-right text-xs text-gray-500 ml-2">
+                        {roleCounts[r] || 0}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -997,13 +1143,14 @@ function dayKey(d) {
 export default function SchedulePage() {
   const [tab, setTab] = useState("urlaub");
   return (
-    <div className="p-6 min-h-screen bg-gray-50">
-      <div className="flex gap-3 mb-6">
+    <div className="px-3 sm:px-6 py-4 sm:py-4 min-h-screen bg-gray-50">
+      {/* Tabs */}
+      <div className="flex gap-2 sm:gap-3 mb-4 sm:mb-4 overflow-x-auto">
         {["weekly", "urlaub", "employees"].map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-lg font-semibold ${
+            className={`px-1 sm:px-2 py-1.5 sm:py-2 rounded-lg font-medium sm:font-semibold text-xs sm:text-xs whitespace-nowrap ${
               tab === t
                 ? "bg-[var(--color-primary)] text-white"
                 : "bg-gray-200 text-gray-800"
@@ -1017,7 +1164,9 @@ export default function SchedulePage() {
           </button>
         ))}
       </div>
-      <div className="bg-white rounded-xl shadow p-6">
+
+      {/* Content */}
+      <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl   text-xs sm:text-base">
         {tab === "weekly" && <WeeklyTab />}
         {tab === "urlaub" && <UrlaubsplanungTab />}
         {tab === "employees" && <EmployeesTab />}

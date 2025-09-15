@@ -22,53 +22,51 @@ export default function UserDropdown() {
 
   if (!session) return null;
 
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!session.user?.name) return "U";
+    return session.user.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Toggle Button */}
+      {/* Avatar Button */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-600 text-white shadow hover:bg-green-700 transition"
+        className="flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white text-sm font-medium shadow-sm hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         aria-label="User menu"
       >
-        <FiUser className="w-4 h-4" />
-        <svg
-          className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+        {getUserInitials()}
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown Menu */}
       <div
-        className={`absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg border border-gray-200 text-xs transition-all ${
+        className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 text-sm transition-all z-50 ${
           open
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-1 pointer-events-none"
+            ? "opacity-100 visible translate-y-0"
+            : "opacity-0 invisible translate-y-1"
         }`}
       >
         {/* User Info */}
-        <div className="px-3 py-2 border-b border-gray-100">
-          <p className="font-medium text-gray-800 truncate">
+        <div className="px-4 py-2 border-b border-gray-100">
+          <p className="font-medium text-gray-800 truncate text-xs">
             {session.user?.name || "User"}
           </p>
-          <p className="text-[11px] text-gray-500 truncate">
+          <p className="text-xs text-gray-500 truncate mt-1">
             {session.user?.email || ""}
           </p>
         </div>
 
-        {/* Links */}
+        {/* Navigation Links */}
         <div className="py-1">
           <Link
             href="/"
-            className="flex items-center px-3 py-1 hover:bg-gray-50 text-gray-700"
+            className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 text-xs"
             onClick={() => setOpen(false)}
           >
             <FiHome className="w-3.5 h-3.5 mr-2 text-gray-400" />
@@ -76,7 +74,7 @@ export default function UserDropdown() {
           </Link>
           <Link
             href="/dashboard"
-            className="flex items-center px-3 py-1 hover:bg-gray-50 text-gray-700"
+            className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 text-xs"
             onClick={() => setOpen(false)}
           >
             <FiSettings className="w-3.5 h-3.5 mr-2 text-gray-400" />
@@ -84,14 +82,14 @@ export default function UserDropdown() {
           </Link>
         </div>
 
-        {/* Logout */}
-        <div className="border-t border-gray-100">
+        {/* Logout Button */}
+        <div className="border-t border-gray-100 pt-1">
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex items-center w-full px-3 py-1 text-red-600 hover:bg-red-50"
+            className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50 text-xs"
           >
             <FiLogOut className="w-3.5 h-3.5 mr-2" />
-            Logout
+            Sign Out
           </button>
         </div>
       </div>

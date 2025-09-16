@@ -12,6 +12,7 @@ import {
   Umbrella,
   Stethoscope,
   Clock,
+  ChevronRight,
 } from "lucide-react";
 
 const ROLE_ORDER = [
@@ -66,9 +67,9 @@ export default function Dashboard() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600 mb-3"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600 mb-4"></div>
           <p className="text-sm text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -125,148 +126,115 @@ export default function Dashboard() {
   // Navigation cards
   const cards = [
     {
-      title: "Schedules",
-      href: "/schedule?tab=weekly",
-      description: "Manage weekly schedules",
-      icon: <CalendarDays className="w-5 h-5" />,
-    },
-    {
-      title: "Medicine Lines",
+      title: "Medicine ",
       href: "/medicine",
       description: "Production lines management",
-      icon: <ClipboardList className="w-5 h-5" />,
+      icon: <ClipboardList className="w-4 h-4" />,
     },
     {
-      title: "Employees",
-      href: "/schedule?tab=employees",
-      description: "Team management",
-      icon: <Users className="w-5 h-5" />,
+      title: "Schedules",
+      href: "/schedule?tab=weekly",
+      description: "Manage schedules and employees",
+      icon: <CalendarDays className="w-4 h-4" />,
     },
     {
-      title: "Add Admin",
+      title: "+Admin",
       href: "/signup",
       description: "Create new accounts",
-      icon: <UserPlus className="w-5 h-5" />,
+      icon: <UserPlus className="w-4 h-4" />,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-100 via-gray-100 to-green-200">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-1">
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+      <header className="relative overflow-hidden bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-1  shadow-lg">
+        <div className="w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-6">
           <div>
-            <h1 className="text-xl md:text-xl font-bold tracking-tight">
-              Willkommen,{" "}
-              <span className="bg-gradient-to-r from-green-500 to-green-800 bg-clip-text text-transparent">
-                {firstName}
-              </span>
+            <h1 className="text-2xl md:text-2xl font-bold">
+              Welcome back, {firstName}
             </h1>
-            <p className="text-xs text-gray-500">{todayStr}</p>
-            <div className="mt-2 h-0.5 md:h-1 w-12 md:w-16 rounded-full bg-gradient-to-br from-green-600 to-black/80"></div>
+            <p className="text-sm text-green-100">{todayStr}</p>
           </div>
         </div>
+        {/* Leaf background accents */}
+        <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-bl-[100%]"></div>
       </header>
 
       {/* Main Content */}
-      <main className="p-4">
-        <div className="max-w-7xl mx-auto space-y-4">
+      <main className="p-6">
+        <div className="w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto space-y-6">
           {/* Quick Navigation */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            {cards.map((card) => (
-              <Link
-                key={card.title}
-                href={card.href}
-                className="bg-green-200 border border-gray-200 rounded-lg p-3 sm:p-4 hover:border-green-300 hover:shadow-sm transition-all flex flex-col"
-              >
-                <div className="text-green-700 mb-2 sm:mb-3 flex-shrink-0">
-                  {card.icon}
-                </div>
-                <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-0.5 sm:mb-1">
-                  {card.title}
-                </h3>
-                <p className="text-[10px] sm:text-xs text-gray-600 leading-snug">
-                  {card.description}
-                </p>
-              </Link>
-            ))}
-          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {cards.map((card, index) => {
+              const colorSchemes = [
+                {
+                  gradient: "from-green-500 to-emerald-600",
+                  text: "text-green-600",
+                  bg: "from-green-100 to-emerald-100",
+                },
+                {
+                  gradient: "from-pink-500 to-red-900",
+                  text: "text-red-600",
+                  bg: "from-red-100 to-red-100",
+                },
+                {
+                  gradient: "from-yellow-500 to-yellow-900",
+                  text: "text-yellow-600",
+                  bg: "from-amber-100 to-yellow-100",
+                },
+              ];
+              const colors = colorSchemes[index % colorSchemes.length];
 
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {/* Employees */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center">
-                <div className="bg-orange-100 p-2 rounded-md mr-3">
-                  <Users className="w-4 h-4 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">
-                    Total Employees
-                  </p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {employees.length}
-                  </p>
-                </div>
-              </div>
-            </div>
+              return (
+                <Link
+                  key={card.title}
+                  href={card.href}
+                  className="group relative bg-white rounded-xl p-4 border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col sm:flex-row sm:items-start gap-3 overflow-hidden"
+                >
+                  {/* Icon inside leaf shape */}
+                  <div
+                    className={`relative z-10 p-2 w-10 h-8 bg-gradient-to-r ${colors.gradient} text-white flex items-center justify-center group-hover:scale-105 transition-transform duration-300 rounded-tl-full rounded-br-full rotate-45`}
+                  >
+                    <div className="-rotate-45">{card.icon}</div>
+                  </div>
 
-            {/* Vacation */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center">
-                <div className="bg-green-100 p-2 rounded-md mr-3">
-                  <Umbrella className="w-4 h-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">
-                    On Vacation
-                  </p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {urlaubEmployees.length}
-                  </p>
-                </div>
-              </div>
-            </div>
+                  {/* Title + Description */}
+                  <div className="flex flex-col flex-1">
+                    <h3 className="relative z-10 text-sm font-semibold text-gray-800 mb-1 group-hover:text-gray-900 transition-colors">
+                      {card.title}
+                    </h3>
+                    <p className="relative z-10 text-xs text-gray-600 leading-snug flex-1">
+                      {card.description}
+                    </p>
 
-            {/* Zeitausgleich */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center">
-                <div className="bg-indigo-100 p-2 rounded-md mr-3">
-                  <Clock className="w-4 h-4 text-indigo-600" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">
-                    Zeitausgleich
-                  </p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {zaEmployees.length}
-                  </p>
-                </div>
-              </div>
-            </div>
+                    {/* Action link */}
+                    <div
+                      className={`mt-2 relative z-10 flex items-center ${
+                        colors.text
+                      } group-hover:${colors.text.replace(
+                        "600",
+                        "700"
+                      )} transition-colors`}
+                    >
+                      <span className="text-xs font-medium">Explore</span>
+                      <ChevronRight className="ml-1 h-3 w-3 transform group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
 
-            {/* Sick Leave */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center">
-                <div className="bg-red-100 p-2 rounded-md mr-3">
-                  <Stethoscope className="w-4 h-4 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">
-                    Sick Leave
-                  </p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {krankEmployees.length}
-                  </p>
-                </div>
-              </div>
-            </div>
+                  {/* Hover overlay */}
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${colors.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl`}
+                  ></div>
+                </Link>
+              );
+            })}
           </div>
 
           {/* Team Distribution + Absence Overview */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Team Distribution */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
               <div className="flex justify-between items-center mb-3">
                 <h2 className="text-sm font-semibold text-gray-900">
                   Team Distribution
@@ -275,14 +243,15 @@ export default function Dashboard() {
                   {employees.length} employees
                 </span>
               </div>
+
               <div className="space-y-3">
-                {ROLE_ORDER.map((r) => (
+                {ROLE_ORDER.filter((r) => roleCounts[r] > 0).map((r) => (
                   <div key={r} className="flex items-center">
-                    <div className="w-32 text-xs text-gray-600 truncate">
+                    <div className="w-40 text-xs text-gray-600 truncate">
                       {r}
                     </div>
                     <div className="flex-1 mx-2">
-                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-green-500 rounded-full"
                           style={{
@@ -305,101 +274,66 @@ export default function Dashboard() {
 
             {/* Absence Overview */}
             <div className="space-y-4">
-              {/* Vacation */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center mb-3">
-                  <div className="bg-green-100 p-1.5 rounded mr-2">
-                    <Umbrella className="w-4 h-4 text-green-600" />
+              {[
+                {
+                  title: "On Vacation",
+                  employees: urlaubEmployees,
+                  color: "green",
+                  icon: <Umbrella className="w-4 h-4 text-green-600" />,
+                },
+                {
+                  title: "Sick Leave",
+                  employees: krankEmployees,
+                  color: "red",
+                  icon: <Stethoscope className="w-4 h-4 text-red-600" />,
+                },
+                {
+                  title: "Zeitausgleich",
+                  employees: zaEmployees,
+                  color: "sky",
+                  icon: <Clock className="w-4 h-4 text-sky-600" />,
+                },
+              ].map((section, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
+                >
+                  <div className="flex items-center mb-3">
+                    <div
+                      className={`bg-${section.color}-100 p-1.5 rounded mr-2`}
+                    >
+                      {section.icon}
+                    </div>
+                    <h2 className="text-sm font-semibold text-gray-900">
+                      {section.title}
+                    </h2>
+                    <span
+                      className={`ml-auto bg-${section.color}-100 text-${section.color}-800 text-xs px-2 py-0.5 rounded-full`}
+                    >
+                      {section.employees.length}
+                    </span>
                   </div>
-                  <h2 className="text-sm font-semibold text-gray-900">
-                    On Vacation
-                  </h2>
-                  <span className="ml-auto bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">
-                    {urlaubEmployees.length}
-                  </span>
+                  {section.employees.length > 0 ? (
+                    <ul className="space-y-1.5">
+                      {section.employees.map((name, idx) => (
+                        <li
+                          key={idx}
+                          className={`px-2 py-1.5 bg-${section.color}-50  text-xs text-${section.color}-800 flex items-center`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 bg-${section.color}-500 rounded-full mr-2`}
+                          ></span>
+                          {name}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-gray-500 py-2">
+                      No employees in this category today
+                    </p>
+                  )}
                 </div>
-                {urlaubEmployees.length > 0 ? (
-                  <ul className="space-y-1.5">
-                    {urlaubEmployees.map((name, i) => (
-                      <li
-                        key={i}
-                        className="px-2 py-1.5 bg-green-50 border border-green-100 rounded text-xs text-green-800 flex items-center"
-                      >
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                        {name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-xs text-gray-500 py-2">
-                    No employees on vacation today
-                  </p>
-                )}
-              </div>
-
-              {/* Sick Leave */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center mb-3">
-                  <div className="bg-red-100 p-1.5 rounded mr-2">
-                    <Stethoscope className="w-4 h-4 text-red-600" />
-                  </div>
-                  <h2 className="text-sm font-semibold text-gray-900">
-                    Sick Leave
-                  </h2>
-                  <span className="ml-auto bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full">
-                    {krankEmployees.length}
-                  </span>
-                </div>
-                {krankEmployees.length > 0 ? (
-                  <ul className="space-y-1.5">
-                    {krankEmployees.map((name, i) => (
-                      <li
-                        key={i}
-                        className="px-2 py-1.5 bg-red-50 border border-red-100 rounded text-xs text-red-800 flex items-center"
-                      >
-                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>
-                        {name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-xs text-gray-500 py-2">
-                    No employees on sick leave today
-                  </p>
-                )}
-              </div>
-
-              {/* Zeitausgleich */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center mb-3">
-                  <div className="bg-indigo-100 p-1.5 rounded mr-2">
-                    <Clock className="w-4 h-4 text-indigo-600" />
-                  </div>
-                  <h2 className="text-sm font-semibold text-gray-900">
-                    Zeitausgleich
-                  </h2>
-                  <span className="ml-auto bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">
-                    {zaEmployees.length}
-                  </span>
-                </div>
-                {zaEmployees.length > 0 ? (
-                  <ul className="space-y-1.5">
-                    {zaEmployees.map((name, i) => (
-                      <li
-                        key={i}
-                        className="px-2 py-1.5 bg-indigo-50 border border-indigo-100 rounded text-xs text-indigo-800 flex items-center"
-                      >
-                        <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-2"></span>
-                        {name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-xs text-gray-500 py-2">
-                    No employees on Zeitausgleich today
-                  </p>
-                )}
-              </div>
+              ))}
             </div>
           </div>
         </div>

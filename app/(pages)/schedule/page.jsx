@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import React from "react";
+import { Plus, Minus } from "lucide-react";
 /* ---------- constants ---------- */
 const LINES = [
   "Linie 0",
@@ -74,7 +75,11 @@ function EmployeesTab() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeRole, setActiveRole] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingEmp, setEditingEmp] = useState(null); // {_id, name, role}
+  const [editName, setEditName] = useState("");
+  const [editRole, setEditRole] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   useEffect(() => {
     fetchEmployees();
   }, []);
@@ -89,6 +94,48 @@ function EmployeesTab() {
       console.error("Error fetching employees:", error);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  function openEdit(emp) {
+    setEditingEmp(emp);
+    setEditName(emp.name);
+    setEditRole(emp.role || "");
+    setIsEditing(true);
+  }
+
+  function closeEdit() {
+    setIsEditing(false);
+    setEditingEmp(null);
+    setEditName("");
+    setEditRole("");
+  }
+
+  async function saveEdit(e) {
+    e.preventDefault();
+    if (!editingEmp?._id || !editName || !editRole) return;
+    setSavingEdit(true);
+    try {
+      const res = await fetch(`/api/employees/${editingEmp._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editName.trim(), role: editRole }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data?.error || "Failed to update employee");
+      } else {
+        // optimistic update in list
+        setEmployees((prev) =>
+          prev.map((e) => (e._id === editingEmp._id ? data : e))
+        );
+        closeEdit();
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update employee");
+    } finally {
+      setSavingEdit(false);
     }
   }
 
@@ -261,27 +308,50 @@ function EmployeesTab() {
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() =>
-                        deleteEmployee(employee._id, employee.name)
-                      }
-                      className="text-gray-400 hover:text-red-500 p-1 rounded-md hover:bg-red-50"
-                      title="Delete employee"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => openEdit(employee)}
+                        className="text-gray-500 hover:text-emerald-600 p-1 rounded-md hover:bg-emerald-50"
+                        title="Edit employee"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
+                        {/* pencil icon */}
+                        <svg
+                          className="w-4 h-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M15.232 5.232l3.536 3.536M4 20h4l10.5-10.5a2.5 2.5 0 00-3.536-3.536L4 16v4z"
+                          />
+                        </svg>
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          deleteEmployee(employee._id, employee.name)
+                        }
+                        className="text-gray-400 hover:text-red-500 p-1 rounded-md hover:bg-red-50"
+                        title="Delete employee"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -372,17 +442,99 @@ function EmployeesTab() {
           </div>
         </div>
       </div>
+      {isEditing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm bg-white rounded-lg shadow-lg border border-gray-200">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-800">
+                Edit Employee
+              </h3>
+              <button
+                onClick={closeEdit}
+                className="p-1 rounded hover:bg-gray-100 text-gray-500"
+                title="Close"
+              >
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={saveEdit} className="px-4 py-4 space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Full Name
+                </label>
+                <input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:ring-1 focus:ring-emerald-500"
+                  placeholder="Full name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Role
+                </label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:ring-1 focus:ring-emerald-500"
+                >
+                  <option value="">Select a role</option>
+                  {ROLE_ORDER.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pt-1 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={closeEdit}
+                  className="px-3 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEdit || !editName || !editRole}
+                  className="px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white disabled:bg-gray-300 hover:bg-emerald-700"
+                >
+                  {savingEdit ? "Saving..." : "Save"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ---------- Weekly plan tab ---------- */
+/* ---------- Weekly plan tab with collapsible Rollen ---------- */
+
 function WeeklyTab() {
   const [employees, setEmployees] = useState([]);
   const [date, setDate] = useState(dayStart(new Date().toISOString()));
   const [shiftData, setShiftData] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [absences, setAbsences] = useState([]);
+  const [rollenCollapsed, setRollenCollapsed] = useState(true); // NEW state
+
   useEffect(() => {
     fetch("/api/employees")
       .then((r) => r.json())
@@ -394,6 +546,7 @@ function WeeklyTab() {
       .then((r) => r.json())
       .then(setShiftData);
   }, [date]);
+
   useEffect(() => {
     fetch(`/api/urlaub?ym=${date.slice(0, 7)}`)
       .then((r) => r.json())
@@ -417,17 +570,17 @@ function WeeklyTab() {
   );
 
   async function assign({ shift, line, position, employeeId }) {
-    // --- NEW: absence check ---
+    // Absence check
     if (employeeId) {
       const absence = isAbsent(employeeId, date);
       if (["U", "K", "ZA"].includes(absence)) {
         alert("⚠️ This employee is absent (" + absence + ") on this day!");
-        return; // stop assignment
+        return;
       }
     }
 
     if (!employeeId) {
-      // --- Clear assignment (DELETE) ---
+      // Clear assignment
       await fetch(
         `/api/schedules?date=${date}&shift=${shift}&line=${
           line || ""
@@ -449,7 +602,7 @@ function WeeklyTab() {
       return;
     }
 
-    // --- Normal assignment (POST) ---
+    // Normal assignment
     const payload = { date, shift, line, position, employeeId };
     const res = await fetch("/api/schedules", {
       method: "POST",
@@ -488,22 +641,18 @@ function WeeklyTab() {
 
   const { week, year } = isoWeek(date);
 
-  // Define the specific roles for the left side
   const LEFT_ROLES = [
     "Vorarbeiter/in",
-    "QK:",
+    "QK",
     "Bucher",
-    "Zubr.Außen",
     "Zubr.Außen",
     "Zubr.Reinraum",
     "Lager",
     "UmbautenTechnik",
   ];
 
-  // Define the positions for the right side (first three are fixed labels)
   const RIGHT_POSITIONS = ["Linienführer", "Maschinenführer", "Reinraum"];
 
-  // Define the lines with their times
   const LINES = [
     { name: "Linie 0", time: "06:00 - 14:15" },
     { name: "Linie 2", time: "06:00 - 14:15" },
@@ -522,17 +671,20 @@ function WeeklyTab() {
       {/* Header */}
       <div className="flex items-center justify-between mb-2 p-2 bg-white rounded-sm border border-gray-300">
         <div>
-          <h2 className="text-lg font-bold text-gray-800">
-            Schichtplan – KW {week} / {year}
+          <h2 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">
+            KW {week} / {year}
           </h2>
         </div>
+
         <div className="flex items-center gap-1 bg-green-50 p-1 rounded-sm">
-          <label className="text-xs font-medium text-gray-700">Datum:</label>
+          <label className="text-[10px] sm:text-xs font-medium text-gray-700">
+            Datum:
+          </label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="border border-gray-300 rounded-sm p-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="border border-gray-300 rounded-sm px-1 py-0.5 text-[10px] sm:text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-[110px] sm:w-auto"
           />
         </div>
       </div>
@@ -551,119 +703,145 @@ function WeeklyTab() {
               </div>
               <div className="text-green-100 text-xs">{time}</div>
             </div>
+            {/* Rollen collapse button */}
+
+            <button
+              onClick={() => setRollenCollapsed(!rollenCollapsed)}
+              className="text-xs font-bold text-yellow-400 bg-green-700 hover:bg-green-900 px-2 py-0.5 rounded-sm flex items-center gap-1"
+            >
+              {rollenCollapsed ? (
+                <Plus className="h-5 w-5 text-yellow-400" aria-hidden />
+              ) : (
+                <Minus className="h-5 w-5 text-yellow-400" aria-hidden />
+              )}
+              <span>Rollen</span>
+            </button>
           </div>
 
           <div className="flex">
-            {/* LEFT: Roles with name selection - Fixed width */}
-            <div className="w-48 ">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr>
-                    <th className="bg-gray-100 border-b border-r border-gray-300 p-0.5 text-xs  font-medium text-gray-700 uppercase">
-                      Rollen
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {LEFT_ROLES.map((role, index) => {
-                    const current = currentAssigned("", role, name);
-                    const dropdownId = `${name}-left-${role}`;
-
-                    return (
-                      <tr
-                        key={`${role}-${index}`}
-                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+            {/* LEFT: Rollen - collapsible */}
+            {!rollenCollapsed && (
+              <div className="w-48 transition-all duration-300">
+                <table className="w-full border-collapse table-fixed">
+                  <thead>
+                    <tr>
+                      <th
+                        colSpan={2}
+                        className="bg-gray-100 border-b border-gray-300 p-0.5 text-xs font-medium text-gray-700 uppercase text-center"
                       >
-                        <td className="border-b border-r border-gray-300 p-0.5 text-xs flex items-center justify-evenly">
-                          <span className="truncate">{role}</span>
-                          <div className="relative flex-shrink-0">
-                            <div
-                              className="w-20 p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center justify-end"
-                              onClick={() =>
-                                setActiveDropdown(
-                                  activeDropdown === dropdownId
-                                    ? null
-                                    : dropdownId
-                                )
-                              }
-                            >
-                              <span className="truncate">
-                                {current?.employee?.name || ""}
-                              </span>
-                            </div>
+                        Rollen
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {LEFT_ROLES.map((role, index) => {
+                      const current = currentAssigned("", role, name);
+                      const dropdownId = `${name}-left-${role}`;
 
-                            {activeDropdown === dropdownId && (
-                              <div className="absolute z-10 right-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto">
-                                <div className="p-0.5">
-                                  <div
-                                    className="p-1 text-xs hover:bg-green-50 cursor-pointer"
-                                    onClick={() =>
-                                      assign({
-                                        shift: name,
-                                        line: "",
-                                        position: role,
-                                        employeeId: null,
-                                      })
-                                    }
-                                  >
-                                    -- Clear --
-                                  </div>
-                                  {employees.map((emp) => (
+                      return (
+                        <tr
+                          key={`${role}-${index}`}
+                          className={
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }
+                        >
+                          {/* Role column with right border → vertical separator */}
+                          <td className="border-b border-r border-gray-300 p-1 text-xs truncate w-32">
+                            {role}
+                          </td>
+
+                          {/* Employee value column with fixed width + truncate */}
+                          <td className="border-b border-gray-300 p-1 text-xs w-40 overflow-hidden">
+                            <div className="relative w-full">
+                              <div
+                                className="w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate"
+                                onClick={() =>
+                                  setActiveDropdown(
+                                    activeDropdown === dropdownId
+                                      ? null
+                                      : dropdownId
+                                  )
+                                }
+                              >
+                                <span className="truncate">
+                                  {current?.employee?.name || ""}
+                                </span>
+                              </div>
+
+                              {activeDropdown === dropdownId && (
+                                <div className="absolute left-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto z-10">
+                                  <div className="p-0.5">
                                     <div
-                                      key={emp._id}
-                                      className="p-1 text-xs hover:bg-green-50 cursor-pointer truncate"
+                                      className="p-1 text-xs hover:bg-green-50 cursor-pointer"
                                       onClick={() =>
                                         assign({
                                           shift: name,
                                           line: "",
                                           position: role,
-                                          employeeId: emp._id,
+                                          employeeId: null,
                                         })
                                       }
                                     >
-                                      {emp.name}
+                                      -- Clear --
                                     </div>
-                                  ))}
+                                    {employees.map((emp) => (
+                                      <div
+                                        key={emp._id}
+                                        className="p-1 text-xs hover:bg-green-50 cursor-pointer truncate"
+                                        onClick={() =>
+                                          assign({
+                                            shift: name,
+                                            line: "",
+                                            position: role,
+                                            employeeId: emp._id,
+                                          })
+                                        }
+                                      >
+                                        {emp.name}
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
-            {/* RIGHT: Lines - Compact with 8 rows total */}
+            {/* RIGHT: Lines */}
             <div className="flex-1 overflow-x-auto">
-              <table className="w-full border-collapse">
+              <table className="w-full border-collapse table-fixed">
                 <thead>
                   <tr>
-                    <th className="border-b border-r border-gray-300 p-0.5 bg-gray-100 text-center text-xs font-medium text-gray-700 w-16">
+                    <th className="border-b border-r border-gray-300 p-0.5 bg-gray-100 text-center text-xs font-medium text-gray-700 w-25">
                       Rolle
                     </th>
                     {LINES.map((line) => (
                       <th
                         key={line.name}
-                        className="border-b border-r border-gray-300 p-0.5  bg-gray-100 text-center"
+                        className="border-b border-r border-gray-300 p-0.5 bg-gray-100 text-center text-xs w-28"
                       >
-                        <div className="font-semibold text-gray-900 text-xs">
+                        <div className="font-semibold text-gray-900 text-xs truncate">
                           {line.name}
                         </div>
                       </th>
                     ))}
                   </tr>
                 </thead>
+
                 <tbody>
-                  {/* First three rows with fixed roles */}
+                  {/* Fixed positions */}
                   {RIGHT_POSITIONS.map((pos, rowIndex) => (
                     <tr
                       key={pos}
                       className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}
                     >
-                      <td className="border-b border-r border-gray-300 p-0.5 pl-1 text-xs font-medium bg-gray-50">
+                      <td className="border-b border-r border-l border-gray-300 p-0.5 pl-1 text-xs font-medium bg-gray-50">
                         {pos}
                       </td>
                       {LINES.map((line) => {
@@ -677,7 +855,7 @@ function WeeklyTab() {
                             className="border-b border-r border-gray-300 p-0.5 relative"
                           >
                             <div
-                              className="w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center"
+                              className="w-full  py-0 text-xs leading-tight cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center whitespace-nowrap overflow-hidden text-ellipsis"
                               onClick={() =>
                                 setActiveDropdown(
                                   activeDropdown === dropdownId
@@ -745,13 +923,13 @@ function WeeklyTab() {
                     </tr>
                   ))}
 
-                  {/* Additional rows (5 more to make total 8) with no labels */}
+                  {/* Extra rows */}
                   {[1, 2, 3, 4, 5, 6].map((rowNum) => (
                     <tr
                       key={rowNum}
                       className={rowNum % 2 === 0 ? "bg-white" : "bg-gray-50"}
                     >
-                      <td className="border-b border-r border-gray-300 p-0.5 text-xs font-medium bg-gray-50">
+                      <td className="border-b border-r border-l border-gray-300 p-0.5 text-xs font-medium bg-gray-50">
                         Position {rowNum}
                       </td>
                       {LINES.map((line) => {
@@ -983,8 +1161,10 @@ function UrlaubsplanungTab() {
     <div className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto">
       <div className="flex items-center justify-between mb-3 p-2 bg-white rounded-sm border border-gray-300">
         <h2 className="text-xl font-bold text-gray-800">Urlaubsplanung</h2>
-        <div className="flex items-center gap-2 bg-blue-50 p-1 rounded-sm">
-          <label className="text-xs font-medium text-gray-700">Monat:</label>
+        <div className="flex items-center gap-1 bg-green-50 p-1 rounded-sm">
+          <label className="text-[10px] sm:text-xs font-medium text-gray-700">
+            {" "}
+          </label>
           <input
             type="month"
             value={ym}
@@ -1143,7 +1323,7 @@ function dayKey(d) {
 export default function SchedulePage() {
   const [tab, setTab] = useState("urlaub");
   return (
-    <div className="px-3 sm:px-6 py-4 sm:py-4 min-h-screen bg-gray-50">
+    <div className="px-1 sm:px-6 py-4 sm:py-4 min-h-screen bg-gray-50">
       {/* Tabs */}
       <div className="flex gap-2 sm:gap-3 mb-4 sm:mb-4 overflow-x-auto">
         {["weekly", "urlaub", "employees"].map((t) => (
@@ -1157,10 +1337,10 @@ export default function SchedulePage() {
             }`}
           >
             {t === "weekly"
-              ? "Weekly Plan"
+              ? "Schichtplan"
               : t === "urlaub"
               ? "Urlaubsplanung"
-              : "Employees"}
+              : "Mitarbeiter"}
           </button>
         ))}
       </div>

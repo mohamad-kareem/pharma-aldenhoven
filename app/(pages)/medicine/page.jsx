@@ -15,6 +15,7 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiMoreVertical,
+  FiFilter,
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -27,7 +28,7 @@ async function apiListMedicines({ q = "", category = "All" } = {}) {
   if (category) url.searchParams.set("category", category);
   const res = await fetch(url.toString(), { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load medicines");
-  return await res.json(); // { items: [...] }
+  return await res.json();
 }
 
 async function apiCreateMedicine(payload) {
@@ -73,7 +74,7 @@ async function apiUploadImage(file) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err?.error || "Upload failed");
   }
-  return await res.json(); // { url, public_id }
+  return await res.json();
 }
 
 /* =========================================================
@@ -98,10 +99,11 @@ function FallbackImg({ src, alt, className }) {
     />
   );
 }
+
 function Spinner() {
   return (
-    <div className="flex justify-center items-center py-16">
-      <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent" />
+    <div className="flex justify-center items-center py-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-3 border-indigo-500 border-t-transparent" />
     </div>
   );
 }
@@ -109,20 +111,22 @@ function Spinner() {
 function StatCard({ icon: Icon, value, label, color }) {
   return (
     <motion.div
-      whileHover={{ y: -1 }}
-      className={`bg-white rounded-md px-3 py-2 border-l-2 ${color} shadow-sm`}
+      whileHover={{ y: -2 }}
+      className={`bg-white rounded-lg p-2 border-l-4 ${color} shadow-sm`}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wide truncate">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             {label}
           </p>
-          <h3 className="text-base font-bold text-gray-800 leading-tight truncate">
-            {value}
-          </h3>
+          <h3 className="text-lg font-bold text-gray-900">{value}</h3>
         </div>
-        <div className={`p-1.5 rounded-md ${color.replace("border", "bg")}`}>
-          <Icon className="h-4 w-4 shrink-0" />
+        <div
+          className={`p-2 rounded-full ${color
+            .replace("border", "bg")
+            .replace("500", "100")}`}
+        >
+          <Icon className="h-5 w-5 text-gray-700" />
         </div>
       </div>
     </motion.div>
@@ -138,54 +142,66 @@ function MedicineCard({ medicine, selected, onClick, onEdit, onDelete }) {
         type="button"
         onClick={onClick}
         aria-label={`Open ${medicine.name}`}
-        whileHover={{ y: -2 }}
+        whileHover={{ y: -1 }}
         layout
         className={[
-          "w-full text-left rounded-lg border relative overflow-hidden",
+          "w-full text-left rounded-md border relative overflow-hidden",
           "transition-all duration-200",
           selected
-            ? "bg-indigo-50 ring-1 ring-indigo-500 border-indigo-300 shadow-md"
+            ? "bg-indigo-50 ring-1 ring-indigo-500 border-indigo-300 shadow-sm"
             : "bg-white border-gray-200 hover:shadow-sm",
         ].join(" ")}
       >
-        <div className="relative h-40 bg-gray-50 flex items-center justify-center">
+        <div className="relative h-28 bg-gray-50 rounded flex items-center justify-center overflow-hidden">
           <FallbackImg
             src={medicine.image}
             alt={medicine.name}
             className="max-h-full max-w-full object-contain p-2"
           />
-          <div className="absolute top-2 right-2">
-            <span
-              className={`px-2 py-1 rounded text-xs font-medium ${
-                difficultyColors[medicine.difficulty] ||
-                "bg-gray-100 text-gray-800"
-              }`}
-            >
+          <span
+            className={`absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-medium shadow-sm ${
+              difficultyColors[medicine.difficulty] ||
+              "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {/* Mobile text */}
+            <span className="sm:hidden">
+              {medicine.difficulty === "Medium"
+                ? "Med"
+                : medicine.difficulty === "Low"
+                ? "Low"
+                : medicine.difficulty === "High"
+                ? "High"
+                : "—"}
+            </span>
+
+            {/* Desktop text */}
+            <span className="hidden sm:inline">
               {medicine.difficulty || "—"}
             </span>
-          </div>
+          </span>
         </div>
 
-        <div className="p-3">
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <h3 className="text-sm font-semibold text-gray-900 truncate">
+        <div className="p-2">
+          <div className="flex items-start justify-between gap-1 mb-1">
+            <h3 className="text-xs font-semibold text-gray-900 truncate">
               {medicine.name}
             </h3>
-            <span className="text-xs font-medium text-indigo-600 whitespace-nowrap">
+            <span className="text-[10px] font-medium text-indigo-600 whitespace-nowrap">
               {medicine.category}
             </span>
           </div>
 
-          <p className="text-gray-600 text-xs line-clamp-2 mb-2">
+          <p className="text-gray-600 text-[11px] line-clamp-2 mb-1">
             {medicine.description}
           </p>
 
-          <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center justify-between text-[10px] text-gray-500">
             <div className="flex items-center">
-              <FiUsers className="mr-1 shrink-0" />
-              <span>{medicine.employeesRequired} employees</span>
+              <FiUsers className="mr-0.5 shrink-0 h-2.5 w-2.5" />
+              <span>{medicine.employeesRequired}</span>
             </div>
-            <div className="text-xs bg-gray-100 px-2 py-1 rounded">
+            <div className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">
               {medicine.productionTime}
             </div>
           </div>
@@ -193,46 +209,45 @@ function MedicineCard({ medicine, selected, onClick, onEdit, onDelete }) {
       </motion.button>
 
       {/* Desktop hover actions */}
-      <div className="absolute top-2 left-2 hidden sm:flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-1 left-1 hidden sm:flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={(e) => {
             e.stopPropagation();
             onEdit?.();
           }}
-          className="bg-white text-gray-700 p-1 rounded shadow hover:bg-gray-100 border border-gray-200"
+          className="bg-white text-gray-700 p-0.5 rounded shadow hover:bg-gray-100 border border-gray-200"
           title="Edit"
         >
-          <FiEdit2 className="h-3 w-3" />
+          <FiEdit2 className="h-2.5 w-2.5" />
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             onDelete?.();
           }}
-          className="bg-white text-gray-700 p-1 rounded shadow hover:bg-gray-100 border border-gray-200"
+          className="bg-white text-gray-700 p-0.5 rounded shadow hover:bg-gray-100 border border-gray-200"
           title="Delete"
         >
-          <FiTrash2 className="h-3 w-3" />
+          <FiTrash2 className="h-2.5 w-2.5" />
         </button>
       </div>
 
       {/* Mobile three-dots menu */}
-      {/* Mobile three-dots menu */}
-      <div className="absolute top-2 left-2 sm:hidden">
+      <div className="absolute top-1 left-1 sm:hidden">
         <button
           onClick={(e) => {
             e.stopPropagation();
             setMobileMenuOpen((v) => !v);
           }}
-          className="bg-white text-gray-700 p-1 rounded shadow border border-gray-200"
+          className="bg-white text-gray-700 p-0.5 rounded shadow border border-gray-200"
           aria-label="More options"
         >
-          <FiMoreVertical className="h-3.5 w-3.5" />
+          <FiMoreVertical className="h-2.5 w-2.5" />
         </button>
 
         {mobileMenuOpen && (
           <div
-            className="absolute mt-1 bg-white rounded shadow border border-gray-200 z-10 min-w-[100px]"
+            className="absolute mt-0.5 bg-white rounded shadow border border-gray-200 z-10 min-w-[80px]"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -240,18 +255,18 @@ function MedicineCard({ medicine, selected, onClick, onEdit, onDelete }) {
                 setMobileMenuOpen(false);
                 onEdit?.();
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-100 w-full text-left"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] text-gray-700 hover:bg-gray-100 w-full text-left"
             >
-              <FiEdit2 className="h-3 w-3" /> Edit
+              <FiEdit2 className="h-2.5 w-2.5" /> Edit
             </button>
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onDelete?.();
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50 w-full text-left"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] text-red-600 hover:bg-red-50 w-full text-left"
             >
-              <FiTrash2 className="h-3 w-3" /> Delete
+              <FiTrash2 className="h-2.5 w-2.5" /> Delete
             </button>
           </div>
         )}
@@ -273,39 +288,38 @@ function MedicineModal({ medicine, onClose }) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <motion.div
-        role="dialog"
-        aria-modal="true"
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="relative mx-auto my-4 sm:my-6 
-w-[92%] sm:w-[85%] md:w-[760px] lg:w-[800px] max-w-[95vw] 
-bg-white rounded-xl shadow-xl 
-max-h-[90vh] flex flex-col overflow-hidden"
-      >
-        <div className="px-5 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              {medicine.name}
-            </h3>
-            <p className="text-indigo-600 text-xs font-medium">
-              {medicine.category}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
-            aria-label="Close details"
-          >
-            <FiX className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="absolute inset-0 flex items-center justify-center p-2">
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg 
+               bg-white rounded-md shadow-lg 
+               max-h-[80vh] flex flex-col overflow-hidden"
+        >
+          <div className="px-4 py-3 border-b flex items-center justify-between sticky top-0 bg-white z-10">
             <div>
-              <div className="h-48 bg-gray-50 rounded-lg overflow-hidden mb-4">
+              <h3 className="text-sm font-semibold text-gray-900">
+                {medicine.name}
+              </h3>
+              <p className="text-indigo-600 text-[10px] font-medium">
+                {medicine.category}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-0.5 rounded hover:bg-gray-100 text-gray-500"
+              aria-label="Close details"
+            >
+              <FiX className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-4 space-y-4">
+              <div className="h-20 bg-gray-50 rounded-lg overflow-hidden">
                 <FallbackImg
                   src={medicine.image}
                   alt={medicine.name}
@@ -313,32 +327,18 @@ max-h-[90vh] flex flex-col overflow-hidden"
                 />
               </div>
 
-              <div className="mb-4">
-                <h4 className="font-medium text-gray-900 text-sm mb-1.5">
+              <div>
+                <h4 className="font-medium text-gray-900 text-xs mb-1">
                   Description
                 </h4>
-                <p className="text-gray-600 text-sm">{medicine.description}</p>
+                <p className="text-gray-600 text-xs">{medicine.description}</p>
               </div>
 
-              <div className="mb-2">
-                <h4 className="font-medium text-gray-900 text-sm mb-1.5">
-                  Quality Control
-                </h4>
-                <div className="flex items-center text-sm">
-                  <FiShield className="text-green-500 mr-2" />
-                  <span className="text-gray-700">
-                    {medicine.qualityControl}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="bg-indigo-50 rounded-lg p-4 mb-4">
-                <h4 className="font-medium text-indigo-900 text-sm mb-2">
+              <div className="bg-indigo-50 rounded-lg p-3">
+                <h4 className="font-medium text-indigo-900 text-xs mb-2">
                   Production Details
                 </h4>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Status:</span>
                     <span className="font-medium">{medicine.status}</span>
@@ -357,24 +357,30 @@ max-h-[90vh] flex flex-col overflow-hidden"
                         : "—"}
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Quality Control:</span>
+                    <span className="font-medium">
+                      {medicine.qualityControl || "—"}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="mb-4">
-                <h4 className="font-medium text-gray-900 text-sm mb-2">
+              <div>
+                <h4 className="font-medium text-gray-900 text-xs mb-1">
                   Employee Requirements
                 </h4>
-                <div className="border border-gray-200 rounded-lg p-3 bg-white">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="border border-gray-200 rounded-lg p-2 bg-white">
+                  <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center">
-                      <FiUsers className="text-indigo-500 mr-2" />
-                      <span className="font-medium">Total Employees:</span>
+                      <FiUsers className="text-indigo-500 mr-1 h-3 w-3" />
+                      <span className="font-medium text-xs">Total:</span>
                     </div>
-                    <span className="text-lg font-bold text-indigo-600">
+                    <span className="text-sm font-bold text-indigo-600">
                       {medicine.employeesRequired}
                     </span>
                   </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-indigo-500"
                       style={{
@@ -389,14 +395,14 @@ max-h-[90vh] flex flex-col overflow-hidden"
               </div>
 
               <div>
-                <h4 className="font-medium text-gray-900 text-sm mb-2">
+                <h4 className="font-medium text-gray-900 text-xs mb-1">
                   Key Ingredients
                 </h4>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1">
                   {(medicine.ingredients || []).map((ing, i) => (
                     <span
                       key={`${ing}-${i}`}
-                      className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded"
+                      className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded"
                     >
                       {ing}
                     </span>
@@ -405,54 +411,84 @@ max-h-[90vh] flex flex-col overflow-hidden"
               </div>
             </div>
           </div>
-        </div>
-        <div className="px-5 py-3 border-t flex justify-end sticky bottom-0 bg-white z-10">
-          <button
-            onClick={onClose}
-            className="inline-flex items-center px-3 py-1.5 rounded-md bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700"
-          >
-            Close
-          </button>
-        </div>
-      </motion.div>
+          <div className="px-4 py-2 border-t flex justify-end sticky bottom-0 bg-white z-10">
+            <button
+              onClick={onClose}
+              className="inline-flex items-center px-2.5 py-1 rounded bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700"
+            >
+              Close
+            </button>
+          </div>
+        </motion.div>
+      </div>
     </motion.div>
   );
 }
 
 function UpsertMedicineModal({ open, onClose, initial, onSave }) {
   const isEdit = Boolean(initial?._id);
-
-  // Build form state from the "initial" item
-  const buildForm = (i) => ({
-    name: i?.name || "",
-    category: i?.category || "Vitamins",
-    productionTime: i?.productionTime || "3 days",
-    employeesRequired: i?.employeesRequired ?? 8,
-    difficulty: i?.difficulty || "Low",
-    ingredients: Array.isArray(i?.ingredients)
-      ? i.ingredients.join(", ")
-      : i?.ingredients || "",
-    description: i?.description || "",
-    status: i?.status || "Active Production",
-    batchSize: i?.batchSize ?? 1000,
-    qualityControl: i?.qualityControl || "",
-    lastProduced: i?.lastProduced
-      ? new Date(i.lastProduced).toISOString().slice(0, 10)
-      : new Date().toISOString().slice(0, 10),
-    imageUrl: i?.image || "/B12.png",
-    imagePublicId: i?.imagePublicId || "",
+  const [form, setForm] = useState({
+    name: "",
+    category: "Vitamins",
+    productionTime: "3 days",
+    employeesRequired: 8,
+    difficulty: "Low",
+    ingredients: "",
+    description: "",
+    status: "Active Production",
+    batchSize: 1000,
+    qualityControl: "",
+    lastProduced: new Date().toISOString().slice(0, 10),
+    imageUrl: "/B12.png",
+    imagePublicId: "",
     imageFile: null,
   });
-
-  const [form, setForm] = useState(buildForm(initial));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const firstFieldRef = useRef(null);
 
-  // ✅ Re-seed the form every time the modal opens or the target item changes
   useEffect(() => {
-    if (open) setForm(buildForm(initial));
-  }, [initial, open]);
+    if (open && initial) {
+      setForm({
+        name: initial.name || "",
+        category: initial.category || "Vitamins",
+        productionTime: initial.productionTime || "3 days",
+        employeesRequired: initial.employeesRequired || 8,
+        difficulty: initial.difficulty || "Low",
+        ingredients: Array.isArray(initial.ingredients)
+          ? initial.ingredients.join(", ")
+          : initial.ingredients || "",
+        description: initial.description || "",
+        status: initial.status || "Active Production",
+        batchSize: initial.batchSize || 1000,
+        qualityControl: initial.qualityControl || "",
+        lastProduced: initial.lastProduced
+          ? new Date(initial.lastProduced).toISOString().slice(0, 10)
+          : new Date().toISOString().slice(0, 10),
+        imageUrl: initial.image || "/B12.png",
+        imagePublicId: initial.imagePublicId || "",
+        imageFile: null,
+      });
+    } else if (open) {
+      // Reset form for new item
+      setForm({
+        name: "",
+        category: "Vitamins",
+        productionTime: "3 days",
+        employeesRequired: 8,
+        difficulty: "Low",
+        ingredients: "",
+        description: "",
+        status: "Active Production",
+        batchSize: 1000,
+        qualityControl: "",
+        lastProduced: new Date().toISOString().slice(0, 10),
+        imageUrl: "/B12.png",
+        imagePublicId: "",
+        imageFile: null,
+      });
+    }
+  }, [open, initial]);
 
   useEffect(() => {
     if (open) setTimeout(() => firstFieldRef.current?.focus(), 50);
@@ -520,54 +556,50 @@ function UpsertMedicineModal({ open, onClose, initial, onSave }) {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50"
         >
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-gray-900/60"
             onClick={onClose}
             aria-hidden="true"
           />
 
-          {/* Dialog */}
-          <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-6">
+          <div className="absolute inset-0 flex items-center justify-center p-2">
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 8 }}
-              className="relative w-full sm:w-[85%] md:w-[720px] max-w-[95vw] bg-white rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-md bg-white rounded-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]"
               role="dialog"
               aria-modal="true"
             >
-              {/* Header */}
-              <div className="px-5 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
-                <h3 className="text-base font-semibold">
-                  {isEdit ? "Edit Medicine" : "Add New Medicine"}
+              <div className="px-4 py-3 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+                <h3 className="text-sm font-semibold">
+                  {isEdit ? "Edit Medicine" : "Add Medicine"}
                 </h3>
                 <button
                   onClick={onClose}
-                  className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
+                  className="p-0.5 rounded hover:bg-gray-100 text-gray-500"
                   aria-label="Close modal"
                 >
-                  <FiX className="h-5 w-5" />
+                  <FiX className="h-4 w-4" />
                 </button>
               </div>
 
-              {/* Body */}
               <form onSubmit={submit} className="flex-1 overflow-y-auto">
-                <div className="p-5 space-y-4">
+                <div className="p-4 space-y-3">
                   {error && (
-                    <div className="text-xs text-red-600 bg-red-50 border border-red-200 px-3 py-1.5 rounded">
+                    <div className="text-xs text-red-600 bg-red-50 border border-red-200 px-2 py-1 rounded">
                       {error}
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-3">
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">
-                        Name
+                        Name *
                       </label>
                       <input
                         ref={firstFieldRef}
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-full border rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
                         value={form.name}
                         onChange={(e) => update("name", e.target.value)}
                         required
@@ -576,99 +608,61 @@ function UpsertMedicineModal({ open, onClose, initial, onSave }) {
 
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">
-                        Category
+                        Category *
                       </label>
-                      <input
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
+                      <select
+                        className="w-full border rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
                         value={form.category}
                         onChange={(e) => update("category", e.target.value)}
-                        list="categories"
-                      />
-                      <datalist id="categories">
+                      >
                         <option>Vitamins</option>
                         <option>Pain Relief</option>
                         <option>Diabetes</option>
                         <option>Cholesterol</option>
                         <option>GERD</option>
                         <option>Antidepressant</option>
-                      </datalist>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Production Time
-                      </label>
-                      <input
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
-                        value={form.productionTime}
-                        onChange={(e) =>
-                          update("productionTime", e.target.value)
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Employees Required
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
-                        value={form.employeesRequired}
-                        onChange={(e) =>
-                          update("employeesRequired", e.target.value)
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Difficulty
-                      </label>
-                      <select
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
-                        value={form.difficulty}
-                        onChange={(e) => update("difficulty", e.target.value)}
-                      >
-                        <option>Low</option>
-                        <option>Medium</option>
-                        <option>High</option>
                       </select>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Employees
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          className="w-full border rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                          value={form.employeesRequired}
+                          onChange={(e) =>
+                            update("employeesRequired", e.target.value)
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Difficulty
+                        </label>
+                        <select
+                          className="w-full border rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                          value={form.difficulty}
+                          onChange={(e) => update("difficulty", e.target.value)}
+                        >
+                          <option>Low</option>
+                          <option>Medium</option>
+                          <option>High</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">
-                        Batch Size
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
-                        value={form.batchSize}
-                        onChange={(e) => update("batchSize", e.target.value)}
-                      />
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Ingredients (comma separated)
-                      </label>
-                      <input
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
-                        value={form.ingredients}
-                        onChange={(e) => update("ingredients", e.target.value)}
-                        placeholder="Cyanocobalamin, Microcrystalline Cellulose, ..."
-                      />
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Description
+                        Description *
                       </label>
                       <textarea
-                        rows={3}
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
+                        rows={2}
+                        className="w-full border rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
                         value={form.description}
                         onChange={(e) => update("description", e.target.value)}
                         required
@@ -677,46 +671,49 @@ function UpsertMedicineModal({ open, onClose, initial, onSave }) {
 
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">
-                        Status
+                        Ingredients (comma separated)
                       </label>
                       <input
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
-                        value={form.status}
-                        onChange={(e) => update("status", e.target.value)}
+                        className="w-full border rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                        value={form.ingredients}
+                        onChange={(e) => update("ingredients", e.target.value)}
+                        placeholder="Cyanocobalamin, Microcrystalline Cellulose, ..."
                       />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Batch Size
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          className="w-full border rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                          value={form.batchSize}
+                          onChange={(e) => update("batchSize", e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Production Time
+                        </label>
+                        <input
+                          className="w-full border rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                          value={form.productionTime}
+                          onChange={(e) =>
+                            update("productionTime", e.target.value)
+                          }
+                        />
+                      </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Quality Control
-                      </label>
-                      <input
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
-                        value={form.qualityControl}
-                        onChange={(e) =>
-                          update("qualityControl", e.target.value)
-                        }
-                        placeholder="ISO 13485 Certified"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Last Produced
-                      </label>
-                      <input
-                        type="date"
-                        className="w-full border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500"
-                        value={form.lastProduced}
-                        onChange={(e) => update("lastProduced", e.target.value)}
-                      />
-                    </div>
-
-                    <div className="sm:col-span-2">
                       <label className="block text-xs text-gray-600 mb-1">
                         Product Image
                       </label>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <input
                           type="file"
                           accept="image/*"
@@ -728,13 +725,13 @@ function UpsertMedicineModal({ open, onClose, initial, onSave }) {
                               update("imagePublicId", "");
                             }
                           }}
-                          className="block w-full text-xs text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                          className="block w-full text-xs text-gray-700 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                         />
                         {form.imageUrl && (
                           <img
                             src={form.imageUrl}
                             alt="preview"
-                            className="h-12 w-12 object-contain bg-gray-50 rounded border"
+                            className="h-8 w-8 object-contain bg-gray-50 rounded border"
                           />
                         )}
                       </div>
@@ -742,20 +739,19 @@ function UpsertMedicineModal({ open, onClose, initial, onSave }) {
                   </div>
                 </div>
 
-                {/* Footer */}
-                <div className="px-5 py-3 border-t bg-white sticky bottom-0">
+                <div className="px-4 py-2 border-t bg-white sticky bottom-0">
                   <div className="flex items-center justify-end gap-2">
                     <button
                       type="button"
                       onClick={onClose}
-                      className="px-3 py-1.5 rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-50"
+                      className="px-2.5 py-1 rounded border border-gray-300 text-xs text-gray-700 hover:bg-gray-50"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={saving}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-indigo-600 text-xs text-white hover:bg-indigo-700 disabled:opacity-60"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-600 text-xs text-white hover:bg-indigo-700 disabled:opacity-60"
                     >
                       {saving ? (
                         <>
@@ -783,14 +779,11 @@ function UpsertMedicineModal({ open, onClose, initial, onSave }) {
 export default function MedicineProduction() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-
   const [showUpsert, setShowUpsert] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
 
@@ -856,27 +849,27 @@ export default function MedicineProduction() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-5">
+    <div className="min-h-screen bg-gray-50 p-3">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <header className="mb-3">
-          <h1 className="text-lg sm:text-2xl font-bold text-gray-900">
+          <h1 className="text-base font-bold text-gray-900">
             Pharma Production
           </h1>
         </header>
 
         {/* Stats */}
-        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+        <div className="hidden md:grid grid-cols-3 gap-3 mb-4">
           <StatCard
             icon={FiPackage}
             value={data.length}
-            label="Total Medicines"
+            label="Medicines"
             color="border-blue-500"
           />
           <StatCard
             icon={FiUsers}
             value={totalEmployees}
-            label="Active Employees"
+            label="Employees"
             color="border-green-500"
           />
           <StatCard
@@ -888,35 +881,46 @@ export default function MedicineProduction() {
         </div>
 
         {/* Controls */}
-        {/* Controls — COMPACT TOOLBAR */}
-        <div className="bg-white rounded-md  p-2 mb-3">
+        <div className="bg-white rounded-md p-2 mb-3">
           <div className="flex items-center gap-2">
             {/* Search */}
-            <div className="relative flex-1 min-w-[140px]">
+            <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                <FiSearch className="h-4 w-4 text-gray-400" />
+                <FiSearch className="h-3.5 w-3.5 text-gray-400" />
               </div>
               <input
                 type="text"
                 placeholder="Search medicines…"
-                className="block w-full pl-7 pr-2 py-1.5 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full pl-8 pr-2 py-1.5 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
-            {/* Filter */}
-            <select
-              className="border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            {/* Filter dropdown for mobile */}
+            <div className="sm:hidden">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="p-1.5 rounded border border-gray-300 text-gray-700"
+              >
+                <FiFilter className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Category filter for desktop */}
+            <div className="hidden sm:block">
+              <select
+                className="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Add button - hidden on mobile */}
             <button
@@ -924,19 +928,39 @@ export default function MedicineProduction() {
                 setEditTarget(null);
                 setShowUpsert(true);
               }}
-              className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-indigo-600 text-white text-xs hover:bg-indigo-700"
+              className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded bg-green-600 text-white text-xs hover:bg-green-700"
             >
-              <FiPlus className="h-4 w-4" />
+              <FiPlus className="h-3.5 w-3.5" />
               <span>Add</span>
             </button>
           </div>
+
+          {/* Mobile filter dropdown */}
+          {showFilters && (
+            <div className="mt-2 sm:hidden">
+              <select
+                className="w-full border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                value={selectedCategory}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setShowFilters(false);
+                }}
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Grid */}
         {loading ? (
           <Spinner />
         ) : data.length ? (
-          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
             <AnimatePresence>
               {data.map((m) => (
                 <MedicineCard
@@ -958,14 +982,14 @@ export default function MedicineProduction() {
             </AnimatePresence>
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="mx-auto h-16 w-16 text-gray-400 mb-3">
+          <div className="text-center py-8">
+            <div className="mx-auto h-12 w-12 text-gray-400 mb-2">
               <FiPackage className="h-full w-full" />
             </div>
-            <h3 className="text-sm font-medium text-gray-900">
+            <h3 className="text-xs font-medium text-gray-900">
               No medicines found
             </h3>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-[11px] text-gray-500">
               Try adjusting your search or filters
             </p>
           </div>
@@ -978,7 +1002,7 @@ export default function MedicineProduction() {
           setEditTarget(null);
           setShowUpsert(true);
         }}
-        className="fixed bottom-5 right-5 inline-flex items-center justify-center h-10 w-10 rounded-full bg-indigo-600 text-white shadow-md hover:bg-indigo-700 sm:hidden"
+        className="fixed bottom-4 right-4 inline-flex items-center justify-center h-10 w-10 rounded-full bg-indigo-600 text-white shadow-md hover:bg-indigo-700 sm:hidden"
         aria-label="Add medicine"
       >
         <FiPlus className="h-5 w-5" />

@@ -53,7 +53,9 @@ export default function UserDropdown() {
         }`}
       >
         {/* User Info */}
-        <div className="px-4 py-2 border-b border-gray-100">
+
+        <div className="px-4 py-2 border-b border-gray-100 flex items-center gap-2">
+          <FiUser className="w-4 h-4 text-gray-500" />
           <p className="font-medium text-gray-800 truncate text-xs">
             {session.user?.name || "User"}
           </p>

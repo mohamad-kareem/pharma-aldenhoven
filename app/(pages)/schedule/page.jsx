@@ -570,6 +570,7 @@ function WeeklyTab() {
       }, {}),
     [employees]
   );
+
   function Dropdown({
     options,
     shift,
@@ -793,23 +794,327 @@ function WeeklyTab() {
     { name: "Umarbeit", time: "06:00 - 14:15" },
   ];
 
+  // Print function
+  const handlePrint = () => {
+    const printWindow = window.open("", "_blank");
+    const printDate = new Date(date).toLocaleDateString("de-DE");
+
+    printWindow.document.write(`
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>Schichtplan KW ${week}/${year}</title>
+    <style>
+      @media print {
+        /* Force backgrounds and gradients to appear */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        @page {
+          size: A4 landscape;
+          margin: 0.5cm;
+        }
+
+        body {
+          font-family: Arial, sans-serif;
+          font-size: 9px;
+          line-height: 1.1;
+        }
+
+        .print-container {
+          width: 100%;
+        }
+
+        .print-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+          padding-bottom: 5px;
+          border-bottom: 2px solid #2d5c2a;
+        }
+
+        .print-title {
+          font-size: 16px;
+          font-weight: bold;
+          color: #2d5c2a;
+        }
+
+        .print-date {
+          font-size: 12px;
+          color: #555;
+        }
+
+        .print-shift {
+          page-break-inside: avoid;
+          margin-bottom: 8px;
+        }
+
+        .print-shift-header {
+          background: linear-gradient(to right, #2d5c2a, #3a7a34);
+          background-color: #2d5c2a; /* fallback if gradient is stripped */
+          color: #ffffff;
+          padding: 4px 6px;
+          font-weight: bold;
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 3px;
+          border-radius: 3px;
+        }
+
+        .print-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .print-table th {
+          background-color: #e8f4e6;
+          color: #2d5c2a;
+          font-weight: bold;
+        }
+
+        .print-table th, .print-table td {
+          border: 1px solid #b8d0b5;
+          padding: 2px 3px;
+          text-align: center;
+        }
+
+        .print-role-header {
+          background-color: #d4e8d1;
+          text-align: left;
+          font-weight: bold;
+        }
+
+        .print-line-header {
+          background-color: #e8f4e6;
+          font-weight: bold;
+        }
+
+        .print-role-cell {
+          background-color: #f0f8ef;
+          text-align: left;
+          font-weight: bold;
+        }
+
+        .print-signature-section {
+          margin-top: 20px;
+          padding-top: 10px;
+          border-top: 1px solid #2d5c2a;
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .print-signature-line {
+          width: 45%;
+          border-bottom: 1px solid #000;
+          padding: 20px 0 5px 0;
+          font-size: 10px;
+        }
+
+        .no-print {
+          display: none !important;
+        }
+
+        .print-shift-content {
+          display: flex;
+        }
+
+        .print-left-roles {
+          width: 160px;
+        }
+
+        .print-right-lines {
+          flex: 1;
+          overflow: hidden;
+        }
+
+        .print-left-table th, .print-left-table td {
+          font-size: 8px;
+        }
+
+        .print-name-cell {
+          text-align: left;
+          padding-left: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="print-container">
+      <div class="print-header">
+        <div class="print-title">Schichtplan KW ${week}/${year}</div>
+        <div class="print-date">${printDate}</div>
+      </div>
+`);
+
+    // Add each shift to the print document
+    SHIFTS.forEach(({ name, time }) => {
+      printWindow.document.write(`
+        <div class="print-shift">
+          <div class="print-shift-header">
+            <div>${name}</div>
+            <div>${time}</div>
+          </div>
+          <div class="print-shift-content">
+      `);
+
+      // Left roles section
+      printWindow.document.write(`
+        <div class="print-left-roles">
+          <table class="print-table print-left-table">
+            <thead>
+              <tr>
+                <th colspan="2">Rollen</th>
+              </tr>
+            </thead>
+            <tbody>
+      `);
+
+      LEFT_ROLES.forEach((role) => {
+        const current = currentAssigned("", role, name);
+        printWindow.document.write(`
+          <tr>
+            <td class="print-role-cell">${role}</td>
+            <td class="print-name-cell">${current?.employee?.name || ""}</td>
+          </tr>
+        `);
+      });
+
+      printWindow.document.write(`
+            </tbody>
+          </table>
+        </div>
+      `);
+
+      // Right lines section
+      printWindow.document.write(`
+        <div class="print-right-lines">
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th class="print-role-header">Rolle</th>
+      `);
+
+      LINES.forEach((line) => {
+        printWindow.document.write(
+          `<th class="print-line-header">${line.name}</th>`
+        );
+      });
+
+      printWindow.document.write(`
+              </tr>
+            </thead>
+            <tbody>
+      `);
+
+      // Add positions
+      RIGHT_POSITIONS.forEach((pos) => {
+        printWindow.document.write(`
+          <tr>
+            <td class="print-role-cell">${pos}</td>
+        `);
+
+        LINES.forEach((line) => {
+          const current = currentAssigned(line.name, pos, name);
+          printWindow.document.write(
+            `<td class="print-name-cell">${current?.employee?.name || ""}</td>`
+          );
+        });
+
+        printWindow.document.write(`</tr>`);
+      });
+
+      // Add position rows
+      [1, 2, 3, 4, 5, 6].forEach((rowNum) => {
+        const pos = `Position ${rowNum}`;
+        printWindow.document.write(`
+          <tr>
+            <td class="print-role-cell">${pos}</td>
+        `);
+
+        LINES.forEach((line) => {
+          const current = currentAssigned(line.name, pos, name);
+          printWindow.document.write(
+            `<td class="print-name-cell">${current?.employee?.name || ""}</td>`
+          );
+        });
+
+        printWindow.document.write(`</tr>`);
+      });
+
+      printWindow.document.write(`
+            </tbody>
+          </table>
+        </div>
+      `);
+
+      printWindow.document.write(`
+          </div>
+        </div>
+      `);
+    });
+
+    // Add signature section
+    printWindow.document.write(`
+        <div class="print-signature-section">
+          <div class="print-signature-line">Datum: _______________</div>
+          <div class="print-signature-line">Unterschrift: _______________</div>
+        </div>
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+
+    // Wait for content to load before printing
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+
   return (
     <div className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto">
-      {/* Header */}
+      {/* Header with print button */}
       <div className="flex items-center justify-between mb-2 p-2 bg-white rounded-sm border border-gray-300">
         <h2 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">
           KW {week} / {year}
         </h2>
-        <div className="flex items-center gap-1 bg-green-50 p-1 rounded-sm">
-          <label className="text-[10px] sm:text-xs font-medium text-gray-700">
-            Datum:
-          </label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="border border-gray-300 rounded-sm px-1 py-0.5 text-[10px] sm:text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-[110px] sm:w-auto"
-          />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-green-50 p-1 rounded-sm">
+            <label className="text-[10px] sm:text-xs font-medium text-gray-700">
+              Datum:
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="border border-gray-300 rounded-sm px-1 py-0.5 text-[10px] sm:text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-[110px] sm:w-auto"
+            />
+          </div>
+          <button
+            onClick={handlePrint}
+            className="bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded text-xs flex items-center gap-1"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m4 4h6a2 2 0 002-2v-4a2 2 0 00-2-2h-6a2 2 0 00-2 2v4a2 2 0 002 2z"
+              />
+            </svg>
+            Drucken
+          </button>
         </div>
       </div>
 
@@ -858,7 +1163,7 @@ function WeeklyTab() {
                   <tbody>
                     {LEFT_ROLES.map((role, index) => {
                       const current = currentAssigned("", role, name);
-                      const options = grouped[role] ?? employees; // ✅ fix here
+                      const options = grouped[role] ?? employees;
                       const dropdownId = `${name}-left-${role}`;
                       return (
                         <tr
@@ -872,10 +1177,10 @@ function WeeklyTab() {
                           </td>
                           <td className="border-b border-gray-300 p-1 text-xs w-40 relative">
                             <Dropdown
-                              options={options} // ✅ now defined
+                              options={options}
                               shift={name}
-                              line="" // ✅ roles don’t belong to a line
-                              position={role} // ✅ position is the role itself
+                              line=""
+                              position={role}
                               dropdownId={dropdownId}
                               current={current}
                               date={date}
@@ -936,10 +1241,10 @@ function WeeklyTab() {
                             className="border-b border-r border-gray-300 p-0.5 relative"
                           >
                             <Dropdown
-                              options={options} // ✅ here just employees
+                              options={options}
                               shift={name}
-                              line={line.name} // ✅ correct line
-                              position={pos} // ✅ "Position 1", "Position 2", etc.
+                              line={line.name}
+                              position={pos}
                               dropdownId={dropdownId}
                               current={current}
                               date={date}
@@ -976,10 +1281,10 @@ function WeeklyTab() {
                             className="border-b border-r border-gray-300 p-0.5 relative"
                           >
                             <Dropdown
-                              options={options} // ✅ here just employees
+                              options={options}
                               shift={name}
-                              line={line.name} // ✅ correct line
-                              position={pos} // ✅ "Position 1", "Position 2", etc.
+                              line={line.name}
+                              position={pos}
                               dropdownId={dropdownId}
                               current={current}
                               date={date}

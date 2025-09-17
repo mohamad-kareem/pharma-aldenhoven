@@ -1013,6 +1013,17 @@ function UrlaubsplanungTab() {
   const [activeCell, setActiveCell] = useState(null); // {empId, dateStr} or null
   const dropdownRef = useRef(null);
 
+  // ✅ Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setActiveCell(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   async function saveAbsence(empId, dateStr, type) {
     const res = await fetch("/api/urlaub", {
       method: "POST",
@@ -1143,9 +1154,6 @@ function UrlaubsplanungTab() {
       <div className="flex items-center justify-between mb-3 p-2 bg-white rounded-sm border border-gray-300">
         <h2 className="text-xl font-bold text-gray-800">Urlaubsplanung</h2>
         <div className="flex items-center gap-1 bg-green-50 p-1 rounded-sm">
-          <label className="text-[10px] sm:text-xs font-medium text-gray-700">
-            {" "}
-          </label>
           <input
             type="month"
             value={ym}

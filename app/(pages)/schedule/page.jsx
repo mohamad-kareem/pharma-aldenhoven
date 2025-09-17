@@ -593,6 +593,24 @@ function WeeklyTab() {
   }) {
     const dropdownRef = useRef(null);
 
+    // Close dropdown on outside click
+    useEffect(() => {
+      function handleClickOutside(e) {
+        if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+          setActiveDropdown(null);
+          setFilter(""); // optional: reset filter when closing
+        }
+      }
+
+      if (activeDropdown === dropdownId) {
+        document.addEventListener("mousedown", handleClickOutside);
+      }
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [activeDropdown, dropdownId, setActiveDropdown]);
+
     const filtered = options.filter((emp) =>
       emp.name.toLowerCase().includes(filter.toLowerCase())
     );

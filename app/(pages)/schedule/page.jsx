@@ -554,7 +554,10 @@ function WeeklyTab() {
       .then((r) => r.json())
       .then(setAbsences);
   }, [date]);
-
+  /*function getDayName(dateStr) {
+    const options = { weekday: "long" };
+    return new Date(dateStr).toLocaleDateString("de-DE", options);
+  }*/
   function isAbsent(empId, dateStr) {
     const ab = absences.find(
       (x) => x.employee?._id === empId && x.date.startsWith(dateStr)
@@ -817,7 +820,12 @@ function WeeklyTab() {
   // Print function
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
-    const printDate = new Date(date).toLocaleDateString("de-DE");
+    const printDate = new Date(date).toLocaleDateString("de-DE", {
+      weekday: "long",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
     // Helpers for printing
     const getCellDisplay = (entry) => {
       if (!entry) return "";
@@ -1131,12 +1139,19 @@ function WeeklyTab() {
             <label className="text-[10px] sm:text-xs font-medium text-gray-700">
               Datum:
             </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="border border-gray-300 rounded-sm px-1 py-0.5 text-[10px] sm:text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-[110px] sm:w-auto"
-            />
+            <div className="flex items-center gap-2">
+              {/* 
+<span className="text-[10px] sm:text-xs font-medium text-gray-600">
+  {getDayName(date)}
+</span> 
+*/}
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="border border-gray-300 rounded-sm px-1 py-0.5 text-[10px] sm:text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-[110px] sm:w-auto"
+              />
+            </div>
           </div>
           <button
             onClick={handlePrint}

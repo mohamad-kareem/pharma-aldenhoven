@@ -599,11 +599,11 @@ function WeeklyTab() {
         <div
           className={`w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate ${
             current?.color === "red"
-              ? "bg-red-200"
+              ? "bg-red-400"
               : current?.color === "blue"
-              ? "bg-blue-200"
+              ? "bg-blue-500"
               : current?.color === "green"
-              ? "bg-green-200"
+              ? "bg-green-500"
               : ""
           }`}
           onClick={() =>

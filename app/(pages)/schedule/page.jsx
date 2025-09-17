@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import React from "react";
 import { Plus, Minus } from "lucide-react";
+
 /* ---------- constants ---------- */
 const LINES = [
   "Linie 0",
@@ -552,7 +553,19 @@ function WeeklyTab() {
       .then((r) => r.json())
       .then(setAbsences);
   }, [date]);
+  useEffect(() => {
+    function handleClickOutside(e) {
+      // Close dropdown if ANY click happens outside
+      if (!e.target.closest(".dropdown-container")) {
+        setActiveDropdown(null);
+      }
+    }
 
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   function isAbsent(empId, dateStr) {
     const ab = absences.find(
       (x) => x.employee?._id === empId && x.date.startsWith(dateStr)
@@ -693,7 +706,7 @@ function WeeklyTab() {
       {SHIFTS.map(({ name, time }) => (
         <div
           key={name}
-          className="mb-4 bg-white rounded-sm border border-gray-300"
+          className="mb-4 bg-white rounded-sm border border-gray-300 overflow-hidden"
         >
           {/* Shift header */}
           <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-green-600 to-green-800 text-white">
@@ -751,8 +764,9 @@ function WeeklyTab() {
                           </td>
 
                           {/* Employee value column with fixed width + truncate */}
-                          <td className="border-b border-gray-300 p-1 text-xs w-40 overflow-hidden">
-                            <div className="relative w-full">
+                          <td className="border-b border-gray-300 p-1 text-xs w-40 overflow-visible relative">
+                            <div className="relative w-full dropdown-container">
+                              {/* Current value cell */}
                               <div
                                 className="w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate"
                                 onClick={() =>
@@ -768,9 +782,11 @@ function WeeklyTab() {
                                 </span>
                               </div>
 
+                              {/* Dropdown menu */}
                               {activeDropdown === dropdownId && (
                                 <div className="absolute left-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto z-50">
                                   <div className="p-0.5">
+                                    {/* Clear option */}
                                     <div
                                       className="p-1 text-xs hover:bg-green-50 cursor-pointer"
                                       onClick={() =>
@@ -784,6 +800,8 @@ function WeeklyTab() {
                                     >
                                       -- Clear --
                                     </div>
+
+                                    {/* Employee list */}
                                     {employees.map((emp) => (
                                       <div
                                         key={emp._id}

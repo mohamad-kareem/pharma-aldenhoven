@@ -1,8 +1,7 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import React from "react";
 import { Plus, Minus } from "lucide-react";
-
 /* ---------- constants ---------- */
 const LINES = [
   "Linie 0",
@@ -533,8 +532,10 @@ function WeeklyTab() {
   const [date, setDate] = useState(dayStart(new Date().toISOString()));
   const [shiftData, setShiftData] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [filter, setFilter] = useState("");
+  const [highlightIndex, setHighlightIndex] = useState(0);
   const [absences, setAbsences] = useState([]);
-  const [rollenCollapsed, setRollenCollapsed] = useState(true); // NEW state
+  const [rollenCollapsed, setRollenCollapsed] = useState(true);
 
   useEffect(() => {
     fetch("/api/employees")
@@ -553,24 +554,12 @@ function WeeklyTab() {
       .then((r) => r.json())
       .then(setAbsences);
   }, [date]);
-  useEffect(() => {
-    function handleClickOutside(e) {
-      // Close dropdown if ANY click happens outside
-      if (!e.target.closest(".dropdown-container")) {
-        setActiveDropdown(null);
-      }
-    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
   function isAbsent(empId, dateStr) {
     const ab = absences.find(
       (x) => x.employee?._id === empId && x.date.startsWith(dateStr)
     );
-    return ab?.type; // "U", "K", "ZA", etc.
+    return ab?.type;
   }
 
   const grouped = useMemo(
@@ -581,9 +570,134 @@ function WeeklyTab() {
       }, {}),
     [employees]
   );
+  function Dropdown({
+    options,
+    shift,
+    line,
+    position,
+    dropdownId,
+    current,
+    date,
+    isAbsent,
+    assign,
+    activeDropdown,
+    setActiveDropdown,
+    filter,
+    setFilter,
+    highlightIndex,
+    setHighlightIndex,
+  }) {
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+      function handleClickOutside(e) {
+        if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+          setActiveDropdown(null);
+          setFilter("");
+        }
+      }
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [setActiveDropdown, setFilter]);
+
+    const filtered = options.filter((emp) =>
+      emp.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    return (
+      <div ref={dropdownRef} className="relative">
+        {/* clickable cell */}
+        <div
+          className="w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate"
+          onClick={() =>
+            setActiveDropdown(activeDropdown === dropdownId ? null : dropdownId)
+          }
+        >
+          <span className="truncate">{current?.employee?.name || ""}</span>
+        </div>
+
+        {/* dropdown list */}
+        {activeDropdown === dropdownId && (
+          <div className="absolute z-10 left-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto">
+            <input
+              autoFocus
+              type="text"
+              value={filter}
+              onChange={(e) => {
+                setFilter(e.target.value);
+                setHighlightIndex(0);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  setHighlightIndex((i) =>
+                    i + 1 < filtered.length ? i + 1 : i
+                  );
+                } else if (e.key === "ArrowUp") {
+                  e.preventDefault();
+                  setHighlightIndex((i) => (i - 1 >= 0 ? i - 1 : 0));
+                } else if (e.key === "Enter") {
+                  const chosen = filtered[highlightIndex];
+                  if (chosen) {
+                    assign({ shift, line, position, employeeId: chosen._id });
+                    setActiveDropdown(null);
+                    setFilter("");
+                  }
+                } else if (e.key === "Escape") {
+                  setActiveDropdown(null);
+                  setFilter("");
+                }
+              }}
+              placeholder="Type name..."
+              className="w-full p-1 text-xs border-b border-gray-200 outline-none"
+            />
+
+            <div
+              className="p-1 text-xs hover:bg-green-50 cursor-pointer"
+              onMouseDown={() => {
+                assign({ shift, line, position, employeeId: null });
+                setActiveDropdown(null);
+                setFilter("");
+              }}
+            >
+              -- Clear --
+            </div>
+
+            {filtered.map((emp, idx) => {
+              const absence = isAbsent(emp._id, date);
+              const isUnavailable = ["U", "K", "ZA"].includes(absence);
+
+              return (
+                <div
+                  key={emp._id}
+                  className={`p-1 text-xs truncate ${
+                    idx === highlightIndex ? "bg-green-100" : ""
+                  } ${
+                    isUnavailable
+                      ? "text-gray-400 bg-gray-50 cursor-not-allowed"
+                      : "hover:bg-green-50 cursor-pointer"
+                  }`}
+                  onMouseDown={() => {
+                    if (!isUnavailable) {
+                      assign({ shift, line, position, employeeId: emp._id });
+                      setActiveDropdown(null);
+                      setFilter("");
+                    }
+                  }}
+                >
+                  {emp.name} {isUnavailable ? `(${absence})` : ""}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   async function assign({ shift, line, position, employeeId }) {
-    // Absence check
     if (employeeId) {
       const absence = isAbsent(employeeId, date);
       if (["U", "K", "ZA"].includes(absence)) {
@@ -593,7 +707,6 @@ function WeeklyTab() {
     }
 
     if (!employeeId) {
-      // Clear assignment
       await fetch(
         `/api/schedules?date=${date}&shift=${shift}&line=${
           line || ""
@@ -612,10 +725,10 @@ function WeeklyTab() {
         )
       );
       setActiveDropdown(null);
+      setFilter("");
       return;
     }
 
-    // Normal assignment
     const payload = { date, shift, line, position, employeeId };
     const res = await fetch("/api/schedules", {
       method: "POST",
@@ -641,6 +754,7 @@ function WeeklyTab() {
       alert(data.error);
     }
     setActiveDropdown(null);
+    setFilter("");
   }
 
   function currentAssigned(line, position, shift) {
@@ -683,12 +797,9 @@ function WeeklyTab() {
     <div className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-2 p-2 bg-white rounded-sm border border-gray-300">
-        <div>
-          <h2 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">
-            KW {week} / {year}
-          </h2>
-        </div>
-
+        <h2 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">
+          KW {week} / {year}
+        </h2>
         <div className="flex items-center gap-1 bg-green-50 p-1 rounded-sm">
           <label className="text-[10px] sm:text-xs font-medium text-gray-700">
             Datum:
@@ -716,8 +827,6 @@ function WeeklyTab() {
               </div>
               <div className="text-green-100 text-xs">{time}</div>
             </div>
-            {/* Rollen collapse button */}
-
             <button
               onClick={() => setRollenCollapsed(!rollenCollapsed)}
               className="text-xs font-bold text-yellow-400 bg-green-700 hover:bg-green-900 px-2 py-0.5 rounded-sm flex items-center gap-1"
@@ -732,9 +841,9 @@ function WeeklyTab() {
           </div>
 
           <div className="flex">
-            {/* LEFT: Rollen - collapsible */}
+            {/* LEFT: Rollen */}
             {!rollenCollapsed && (
-              <div className="w-48 transition-all duration-300">
+              <div className="w-48">
                 <table className="w-full border-collapse table-fixed">
                   <thead>
                     <tr>
@@ -749,79 +858,36 @@ function WeeklyTab() {
                   <tbody>
                     {LEFT_ROLES.map((role, index) => {
                       const current = currentAssigned("", role, name);
+                      const options = grouped[role] ?? employees; // ✅ fix here
                       const dropdownId = `${name}-left-${role}`;
-
                       return (
                         <tr
-                          key={`${role}-${index}`}
+                          key={role}
                           className={
                             index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           }
                         >
-                          {/* Role column with right border → vertical separator */}
                           <td className="border-b border-r border-gray-300 p-1 text-xs truncate w-32">
                             {role}
                           </td>
-
-                          {/* Employee value column with fixed width + truncate */}
-                          <td className="border-b border-gray-300 p-1 text-xs w-40 overflow-visible relative">
-                            <div className="relative w-full dropdown-container">
-                              {/* Current value cell */}
-                              <div
-                                className="w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate"
-                                onClick={() =>
-                                  setActiveDropdown(
-                                    activeDropdown === dropdownId
-                                      ? null
-                                      : dropdownId
-                                  )
-                                }
-                              >
-                                <span className="truncate">
-                                  {current?.employee?.name || ""}
-                                </span>
-                              </div>
-
-                              {/* Dropdown menu */}
-                              {activeDropdown === dropdownId && (
-                                <div className="absolute left-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto z-50">
-                                  <div className="p-0.5">
-                                    {/* Clear option */}
-                                    <div
-                                      className="p-1 text-xs hover:bg-green-50 cursor-pointer"
-                                      onClick={() =>
-                                        assign({
-                                          shift: name,
-                                          line: "",
-                                          position: role,
-                                          employeeId: null,
-                                        })
-                                      }
-                                    >
-                                      -- Clear --
-                                    </div>
-
-                                    {/* Employee list */}
-                                    {employees.map((emp) => (
-                                      <div
-                                        key={emp._id}
-                                        className="p-1 text-xs hover:bg-green-50 cursor-pointer truncate"
-                                        onClick={() =>
-                                          assign({
-                                            shift: name,
-                                            line: "",
-                                            position: role,
-                                            employeeId: emp._id,
-                                          })
-                                        }
-                                      >
-                                        {emp.name}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                          <td className="border-b border-gray-300 p-1 text-xs w-40 relative">
+                            <Dropdown
+                              options={options} // ✅ now defined
+                              shift={name}
+                              line="" // ✅ roles don’t belong to a line
+                              position={role} // ✅ position is the role itself
+                              dropdownId={dropdownId}
+                              current={current}
+                              date={date}
+                              isAbsent={isAbsent}
+                              assign={assign}
+                              activeDropdown={activeDropdown}
+                              setActiveDropdown={setActiveDropdown}
+                              filter={filter}
+                              setFilter={setFilter}
+                              highlightIndex={highlightIndex}
+                              setHighlightIndex={setHighlightIndex}
+                            />
                           </td>
                         </tr>
                       );
@@ -836,7 +902,7 @@ function WeeklyTab() {
               <table className="w-full border-collapse table-fixed">
                 <thead>
                   <tr>
-                    <th className="border-b border-r border-gray-300 p-0.5 bg-gray-100 text-center text-xs font-medium text-gray-700 w-25">
+                    <th className="border-b border-l-2 border-r border-gray-300 p-0.5 bg-gray-100 text-center text-xs font-medium text-gray-700 w-25">
                       Rolle
                     </th>
                     {LINES.map((line) => (
@@ -851,107 +917,52 @@ function WeeklyTab() {
                     ))}
                   </tr>
                 </thead>
-
                 <tbody>
-                  {/* Fixed positions */}
                   {RIGHT_POSITIONS.map((pos, rowIndex) => (
                     <tr
                       key={pos}
                       className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}
                     >
-                      <td className="border-b border-r border-l border-gray-300 p-0.5 pl-1 text-xs font-medium bg-gray-50">
+                      <td className="border-b border-r-2 border-l-2 border-gray-300 p-0.5 pl-1 text-xs font-medium bg-gray-50">
                         {pos}
                       </td>
                       {LINES.map((line) => {
                         const current = currentAssigned(line.name, pos, name);
                         const options = grouped[pos] ?? employees;
                         const dropdownId = `${name}-${line.name}-${pos}`;
-
                         return (
                           <td
-                            key={`${line.name}-${pos}`}
+                            key={line.name}
                             className="border-b border-r border-gray-300 p-0.5 relative"
                           >
-                            <div className="relative w-full dropdown-container">
-                              {/* Current cell */}
-                              <div
-                                className="w-full py-0 text-xs leading-tight cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center whitespace-nowrap overflow-hidden text-ellipsis"
-                                onClick={() =>
-                                  setActiveDropdown(
-                                    activeDropdown === dropdownId
-                                      ? null
-                                      : dropdownId
-                                  )
-                                }
-                              >
-                                {current?.employee?.name || ""}
-                              </div>
-
-                              {/* Dropdown */}
-                              {activeDropdown === dropdownId && (
-                                <div className="absolute z-10 left-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto">
-                                  <div className="p-0.5">
-                                    <div
-                                      className="p-1 text-xs hover:bg-green-50 cursor-pointer"
-                                      onClick={() =>
-                                        assign({
-                                          shift: name,
-                                          line: line.name,
-                                          position: pos,
-                                          employeeId: null,
-                                        })
-                                      }
-                                    >
-                                      -- Clear --
-                                    </div>
-                                    {options.map((emp) => {
-                                      const absence = isAbsent(emp._id, date);
-                                      const isUnavailable = [
-                                        "U",
-                                        "K",
-                                        "ZA",
-                                      ].includes(absence);
-
-                                      return (
-                                        <div
-                                          key={emp._id}
-                                          className={`p-1 text-xs truncate ${
-                                            isUnavailable
-                                              ? "text-gray-400 bg-gray-50 cursor-not-allowed"
-                                              : "hover:bg-green-50 cursor-pointer"
-                                          }`}
-                                          onClick={() =>
-                                            !isUnavailable &&
-                                            assign({
-                                              shift: name,
-                                              line: line.name,
-                                              position: pos,
-                                              employeeId: emp._id,
-                                            })
-                                          }
-                                        >
-                                          {emp.name}{" "}
-                                          {isUnavailable ? `(${absence})` : ""}
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                            <Dropdown
+                              options={options} // ✅ here just employees
+                              shift={name}
+                              line={line.name} // ✅ correct line
+                              position={pos} // ✅ "Position 1", "Position 2", etc.
+                              dropdownId={dropdownId}
+                              current={current}
+                              date={date}
+                              isAbsent={isAbsent}
+                              assign={assign}
+                              activeDropdown={activeDropdown}
+                              setActiveDropdown={setActiveDropdown}
+                              filter={filter}
+                              setFilter={setFilter}
+                              highlightIndex={highlightIndex}
+                              setHighlightIndex={setHighlightIndex}
+                            />
                           </td>
                         );
                       })}
                     </tr>
                   ))}
-
-                  {/* Extra rows */}
                   {[1, 2, 3, 4, 5, 6].map((rowNum) => (
                     <tr
                       key={rowNum}
                       className={rowNum % 2 === 0 ? "bg-white" : "bg-gray-50"}
                     >
-                      <td className="border-b border-r border-l border-gray-300 p-0.5 text-xs font-medium bg-gray-50">
+                      <td className="border-b border-r-2 border-l-2 border-gray-300 p-0.5 text-xs font-medium bg-gray-50">
                         Position {rowNum}
                       </td>
                       {LINES.map((line) => {
@@ -959,75 +970,28 @@ function WeeklyTab() {
                         const current = currentAssigned(line.name, pos, name);
                         const options = employees;
                         const dropdownId = `${name}-${line.name}-${pos}`;
-
                         return (
                           <td
-                            key={`${line.name}-${pos}`}
+                            key={line.name}
                             className="border-b border-r border-gray-300 p-0.5 relative"
                           >
-                            <div
-                              className="w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center"
-                              onClick={() =>
-                                setActiveDropdown(
-                                  activeDropdown === dropdownId
-                                    ? null
-                                    : dropdownId
-                                )
-                              }
-                            >
-                              {current?.employee?.name || ""}
-                            </div>
-
-                            {activeDropdown === dropdownId && (
-                              <div className="absolute z-10 left-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto">
-                                <div className="p-0.5">
-                                  <div
-                                    className="p-1 text-xs hover:bg-green-50 cursor-pointer"
-                                    onClick={() =>
-                                      assign({
-                                        shift: name,
-                                        line: line.name,
-                                        position: pos,
-                                        employeeId: null,
-                                      })
-                                    }
-                                  >
-                                    -- Clear --
-                                  </div>
-                                  {options.map((emp) => {
-                                    const absence = isAbsent(emp._id, date);
-                                    const isUnavailable = [
-                                      "U",
-                                      "K",
-                                      "ZA",
-                                    ].includes(absence);
-
-                                    return (
-                                      <div
-                                        key={emp._id}
-                                        className={`p-1 text-xs truncate ${
-                                          isUnavailable
-                                            ? "text-gray-400 bg-gray-50 cursor-not-allowed"
-                                            : "hover:bg-green-50 cursor-pointer"
-                                        }`}
-                                        onClick={() =>
-                                          !isUnavailable &&
-                                          assign({
-                                            shift: name,
-                                            line: line.name,
-                                            position: pos,
-                                            employeeId: emp._id,
-                                          })
-                                        }
-                                      >
-                                        {emp.name}{" "}
-                                        {isUnavailable ? `(${absence})` : ""}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
+                            <Dropdown
+                              options={options} // ✅ here just employees
+                              shift={name}
+                              line={line.name} // ✅ correct line
+                              position={pos} // ✅ "Position 1", "Position 2", etc.
+                              dropdownId={dropdownId}
+                              current={current}
+                              date={date}
+                              isAbsent={isAbsent}
+                              assign={assign}
+                              activeDropdown={activeDropdown}
+                              setActiveDropdown={setActiveDropdown}
+                              filter={filter}
+                              setFilter={setFilter}
+                              highlightIndex={highlightIndex}
+                              setHighlightIndex={setHighlightIndex}
+                            />
                           </td>
                         );
                       })}

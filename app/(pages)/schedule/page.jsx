@@ -1010,13 +1010,39 @@ function WeeklyTab() {
 /* ---------- Urlaubsplanung tab ---------- */
 function UrlaubsplanungTab() {
   const [employees, setEmployees] = useState([]);
+  const [activeCell, setActiveCell] = useState(null); // {empId, dateStr} or null
+  const dropdownRef = useRef(null);
+
+  async function saveAbsence(empId, dateStr, type) {
+    const res = await fetch("/api/urlaub", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        employeeId: empId,
+        date: dateStr,
+        type: type || "NONE",
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setItems((prev) => {
+        const without = prev.filter(
+          (x) => !(x.employee?._id === empId && x.date.startsWith(dateStr))
+        );
+        return type ? [...without, data] : without;
+      });
+    } else {
+      alert(data.error);
+    }
+  }
+
   const [ym, setYm] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
   const [items, setItems] = useState([]);
 
-  // Feiertage fixed for 2025 (could be moved outside)
+  // Feiertage fixed for 2025
   const FEIERTAGE = [
     "2025-01-01",
     "2025-04-18",
@@ -1077,11 +1103,11 @@ function UrlaubsplanungTab() {
 
   // Add F, S, N
   const colors = {
-    U: "bg-green-400",
-    ZA: "bg-blue-400",
-    K: "bg-yellow-400",
-    F: "bg-pink-400",
-    S: "bg-orange-400",
+    U: "bg-green-600",
+    ZA: "bg-blue-500",
+    K: "bg-yellow-500",
+    F: "bg-red-500",
+    S: "bg-gray-400",
     N: "bg-black/80",
     Feiertag: "bg-purple-400",
   };
@@ -1091,37 +1117,6 @@ function UrlaubsplanungTab() {
       (x) =>
         x.employee && x.employee._id === empId && x.date.startsWith(dateStr)
     );
-  }
-
-  // cycle absence type on click
-  async function cycle(empId, dateStr) {
-    if (FEIERTAGE.includes(dateStr)) return; // don’t allow clicking Feiertage
-
-    const cur = getAbs(empId, dateStr)?.type ?? "";
-    // now includes F, S, N
-    const order = ["", "F", "S", "N", "U", "ZA", "K"];
-    const next = order[(order.indexOf(cur) + 1) % order.length];
-
-    const res = await fetch("/api/urlaub", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        employeeId: empId,
-        date: dateStr,
-        type: next || "NONE",
-      }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setItems((prev) => {
-        const without = prev.filter(
-          (x) => !(x.employee?._id === empId && x.date.startsWith(dateStr))
-        );
-        return next ? [...without, data] : without;
-      });
-    } else {
-      alert(data.error);
-    }
   }
 
   // compute totals for each employee (only U, ZA, K)
@@ -1220,10 +1215,11 @@ function UrlaubsplanungTab() {
           <tbody>
             {Object.entries(grouped).map(([role, emps]) => (
               <React.Fragment key={role}>
+                {/* Role header row */}
                 <tr>
                   <td
                     className="bg-gray-200 font-semibold border border-gray-300 px-1 py-1 sticky left-0 z-10 w-28 whitespace-nowrap"
-                    title={role} // full text on hover
+                    title={role}
                   >
                     {shortenRole(role)}
                   </td>
@@ -1237,10 +1233,10 @@ function UrlaubsplanungTab() {
                   const totals = getTotals(emp._id);
                   return (
                     <tr key={emp._id} className="hover:bg-gray-50 w-fit">
+                      {/* Name + totals */}
                       <td className="border border-gray-300 p-1 font-medium sticky left-0 z-10 bg-white w-28 truncate">
                         {emp.name}
                       </td>
-
                       <td className="border border-gray-300 p-0.5 text-center bg-green-50 font-medium">
                         {totals.U}
                       </td>
@@ -1250,6 +1246,8 @@ function UrlaubsplanungTab() {
                       <td className="border border-gray-300 p-0.5 text-center bg-yellow-50 font-medium">
                         {totals.K}
                       </td>
+
+                      {/* Days of month */}
                       {days.map((d) => {
                         const dateStr = dayKey(d);
                         const ab = getAbs(emp._id, dateStr);
@@ -1270,15 +1268,50 @@ function UrlaubsplanungTab() {
                         return (
                           <td
                             key={dateStr}
-                            className={`border border-gray-300 text-center cursor-pointer p-0.5 ${cls}`}
+                            className={`border border-gray-300 text-center p-0.5 relative ${cls}`}
                             onClick={() =>
-                              !isHoliday && cycle(emp._id, dateStr)
+                              !isHoliday &&
+                              setActiveCell({ empId: emp._id, dateStr })
                             }
                             title={`${emp.name} - ${d.toLocaleDateString(
                               "de-DE"
                             )}`}
                           >
                             {ab?.type || (isHoliday ? "FT" : "")}
+
+                            {/* Dropdown */}
+                            {activeCell?.empId === emp._id &&
+                              activeCell?.dateStr === dateStr && (
+                                <div
+                                  ref={dropdownRef}
+                                  className="absolute z-20 mt-1 left-0 bg-white border border-gray-300 rounded shadow text-xs"
+                                >
+                                  {["", "F", "S", "N", "U", "ZA", "K"].map(
+                                    (type) => {
+                                      const colorClass =
+                                        type && colors[type]
+                                          ? `${colors[type]} text-white`
+                                          : "text-gray-500";
+                                      return (
+                                        <div
+                                          key={type || "clear"}
+                                          className={`px-2 py-1 cursor-pointer hover:opacity-80 ${colorClass} border-b border-gray-200 last:border-b-0`}
+                                          onMouseDown={async () => {
+                                            await saveAbsence(
+                                              emp._id,
+                                              dateStr,
+                                              type
+                                            );
+                                            setActiveCell(null);
+                                          }}
+                                        >
+                                          {type === "" ? "Clear" : type}
+                                        </div>
+                                      );
+                                    }
+                                  )}
+                                </div>
+                              )}
                           </td>
                         );
                       })}

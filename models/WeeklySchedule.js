@@ -4,15 +4,20 @@ const WeeklyScheduleSchema = new mongoose.Schema(
   {
     year: { type: Number, required: true },
     week: { type: Number, required: true },
-    date: { type: Date, required: true }, // make sure this exists!
+    date: { type: Date, required: true },
     shift: { type: String, enum: ["Früh", "Spät", "Nacht"], required: true },
-    line: { type: String, default: "" }, // "" for global roles
+    line: { type: String, default: "" },
     position: { type: String, required: true },
     employee: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
-      required: true,
     },
+    customName: { type: String, default: "" }, // ✅ free text
+    color: {
+      type: String,
+      enum: ["red", "blue", "green", null],
+      default: null,
+    }, // ✅ highlight color
   },
   { timestamps: true }
 );

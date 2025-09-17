@@ -590,38 +590,34 @@ function WeeklyTab() {
   }) {
     const dropdownRef = useRef(null);
 
-    useEffect(() => {
-      function handleClickOutside(e) {
-        if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-          setActiveDropdown(null);
-          setFilter("");
-        }
-      }
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [setActiveDropdown, setFilter]);
-
     const filtered = options.filter((emp) =>
       emp.name.toLowerCase().includes(filter.toLowerCase())
     );
 
     return (
       <div ref={dropdownRef} className="relative">
-        {/* clickable cell */}
         <div
-          className="w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate"
+          className={`w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate ${
+            current?.color === "red"
+              ? "bg-red-200"
+              : current?.color === "blue"
+              ? "bg-blue-200"
+              : current?.color === "green"
+              ? "bg-green-200"
+              : ""
+          }`}
           onClick={() =>
             setActiveDropdown(activeDropdown === dropdownId ? null : dropdownId)
           }
         >
-          <span className="truncate">{current?.employee?.name || ""}</span>
+          <span className="truncate">
+            {current?.employee?.name || current?.customName || ""}
+          </span>
         </div>
 
-        {/* dropdown list */}
         {activeDropdown === dropdownId && (
-          <div className="absolute z-10 left-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto">
+          <div className="absolute z-20 left-0 mt-1 w-40 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto">
+            {/* Search box */}
             <input
               autoFocus
               type="text"
@@ -630,35 +626,21 @@ function WeeklyTab() {
                 setFilter(e.target.value);
                 setHighlightIndex(0);
               }}
-              onKeyDown={(e) => {
-                if (e.key === "ArrowDown") {
-                  e.preventDefault();
-                  setHighlightIndex((i) =>
-                    i + 1 < filtered.length ? i + 1 : i
-                  );
-                } else if (e.key === "ArrowUp") {
-                  e.preventDefault();
-                  setHighlightIndex((i) => (i - 1 >= 0 ? i - 1 : 0));
-                } else if (e.key === "Enter") {
-                  const chosen = filtered[highlightIndex];
-                  if (chosen) {
-                    assign({ shift, line, position, employeeId: chosen._id });
-                    setActiveDropdown(null);
-                    setFilter("");
-                  }
-                } else if (e.key === "Escape") {
-                  setActiveDropdown(null);
-                  setFilter("");
-                }
-              }}
               placeholder="Type name..."
               className="w-full p-1 text-xs border-b border-gray-200 outline-none"
             />
 
+            {/* Clear option */}
             <div
-              className="p-1 text-xs hover:bg-green-50 cursor-pointer"
+              className="p-1 text-xs hover:bg-gray-100 cursor-pointer"
               onMouseDown={() => {
-                assign({ shift, line, position, employeeId: null });
+                assign({
+                  shift,
+                  line,
+                  position,
+                  employeeId: null,
+                  customName: "",
+                });
                 setActiveDropdown(null);
                 setFilter("");
               }}
@@ -666,53 +648,96 @@ function WeeklyTab() {
               -- Clear --
             </div>
 
-            {filtered.map((emp, idx) => {
-              const absence = isAbsent(emp._id, date);
-              const isUnavailable = ["U", "K", "ZA"].includes(absence);
+            {/* Employee matches */}
+            {filtered.map((emp, idx) => (
+              <div
+                key={emp._id}
+                className={`p-1 text-xs truncate ${
+                  idx === highlightIndex ? "bg-green-100" : ""
+                } hover:bg-green-50 cursor-pointer`}
+                onMouseDown={() => {
+                  assign({ shift, line, position, employeeId: emp._id });
+                  setActiveDropdown(null);
+                  setFilter("");
+                }}
+              >
+                {emp.name}
+              </div>
+            ))}
 
-              return (
+            {/* Free text option */}
+            {filter && (
+              <div
+                className="p-1 text-xs text-blue-600 hover:bg-blue-50 cursor-pointer"
+                onMouseDown={() => {
+                  assign({
+                    shift,
+                    line,
+                    position,
+                    employeeId: null,
+                    customName: filter,
+                  });
+                  setActiveDropdown(null);
+                  setFilter("");
+                }}
+              >
+                ➕ Add "{filter}"
+              </div>
+            )}
+
+            {/* Color options */}
+            <div className="flex gap-1 p-1 border-t border-gray-200">
+              {["red", "blue", "green"].map((c) => (
                 <div
-                  key={emp._id}
-                  className={`p-1 text-xs truncate ${
-                    idx === highlightIndex ? "bg-green-100" : ""
-                  } ${
-                    isUnavailable
-                      ? "text-gray-400 bg-gray-50 cursor-not-allowed"
-                      : "hover:bg-green-50 cursor-pointer"
-                  }`}
+                  key={c}
+                  className={`w-5 h-5 rounded-full cursor-pointer bg-${c}-500`}
                   onMouseDown={() => {
-                    if (!isUnavailable) {
-                      assign({ shift, line, position, employeeId: emp._id });
-                      setActiveDropdown(null);
-                      setFilter("");
-                    }
+                    assign({
+                      shift,
+                      line,
+                      position,
+                      employeeId: current?.employee?._id || null,
+                      customName: current?.customName || "",
+                      color: c,
+                    });
+                    setActiveDropdown(null);
+                    setFilter("");
                   }}
-                >
-                  {emp.name} {isUnavailable ? `(${absence})` : ""}
-                </div>
-              );
-            })}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
     );
   }
 
-  async function assign({ shift, line, position, employeeId }) {
-    if (employeeId) {
-      const absence = isAbsent(employeeId, date);
-      if (["U", "K", "ZA"].includes(absence)) {
-        alert("⚠️ This employee is absent (" + absence + ") on this day!");
-        return;
-      }
-    }
+  async function assign({
+    shift,
+    line,
+    position,
+    employeeId,
+    customName,
+    color,
+  }) {
+    const payload = {
+      date,
+      shift,
+      line,
+      position,
+      employeeId,
+      customName,
+      color,
+    };
 
-    if (!employeeId) {
+    if (!employeeId && !customName) {
       await fetch(
         `/api/schedules?date=${date}&shift=${shift}&line=${
           line || ""
         }&position=${position}`,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+        }
       );
       setShiftData((p) =>
         p.filter(
@@ -725,12 +750,9 @@ function WeeklyTab() {
             )
         )
       );
-      setActiveDropdown(null);
-      setFilter("");
       return;
     }
 
-    const payload = { date, shift, line, position, employeeId };
     const res = await fetch("/api/schedules", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -754,8 +776,6 @@ function WeeklyTab() {
     } else {
       alert(data.error);
     }
-    setActiveDropdown(null);
-    setFilter("");
   }
 
   function currentAssigned(line, position, shift) {
@@ -798,6 +818,19 @@ function WeeklyTab() {
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
     const printDate = new Date(date).toLocaleDateString("de-DE");
+    // Helpers for printing
+    const getCellDisplay = (entry) => {
+      if (!entry) return "";
+      return entry.employee?.name || entry.customName || "";
+    };
+
+    const getCellStyle = (entry) => {
+      if (!entry?.color) return "";
+      if (entry.color === "red") return "background-color:#fca5a5;"; // red-300
+      if (entry.color === "blue") return "background-color:#93c5fd;"; // blue-300
+      if (entry.color === "green") return "background-color:#86efac;"; // green-300
+      return "";
+    };
 
     printWindow.document.write(`
   <!DOCTYPE html>
@@ -978,7 +1011,10 @@ function WeeklyTab() {
         printWindow.document.write(`
           <tr>
             <td class="print-role-cell">${role}</td>
-            <td class="print-name-cell">${current?.employee?.name || ""}</td>
+           <td class="print-name-cell" style="${getCellStyle(current)}">
+  ${getCellDisplay(current)}
+</td>
+
           </tr>
         `);
       });
@@ -1020,7 +1056,10 @@ function WeeklyTab() {
         LINES.forEach((line) => {
           const current = currentAssigned(line.name, pos, name);
           printWindow.document.write(
-            `<td class="print-name-cell">${current?.employee?.name || ""}</td>`
+            `<td class="print-name-cell" style="${getCellStyle(current)}">
+  ${getCellDisplay(current)}
+</td>
+`
           );
         });
 
@@ -1038,7 +1077,10 @@ function WeeklyTab() {
         LINES.forEach((line) => {
           const current = currentAssigned(line.name, pos, name);
           printWindow.document.write(
-            `<td class="print-name-cell">${current?.employee?.name || ""}</td>`
+            `<td class="print-name-cell" style="${getCellStyle(current)}">
+  ${getCellDisplay(current)}
+</td>
+`
           );
         });
 

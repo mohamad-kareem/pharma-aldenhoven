@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = "force-dynamic"; // ⬅️ add this line
+
 import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Leaf } from "lucide-react";
@@ -13,7 +15,7 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const token = searchParams?.get("token") || ""; // safer
 
   async function handleSubmit(e) {
     e.preventDefault();

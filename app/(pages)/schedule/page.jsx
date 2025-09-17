@@ -693,7 +693,7 @@ function WeeklyTab() {
       {SHIFTS.map(({ name, time }) => (
         <div
           key={name}
-          className="mb-4 bg-white rounded-sm border border-gray-300 overflow-hidden"
+          className="mb-4 bg-white rounded-sm border border-gray-300"
         >
           {/* Shift header */}
           <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-green-600 to-green-800 text-white">
@@ -769,7 +769,7 @@ function WeeklyTab() {
                               </div>
 
                               {activeDropdown === dropdownId && (
-                                <div className="absolute left-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto z-10">
+                                <div className="absolute left-0 mt-0.5 w-36 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto z-50">
                                   <div className="p-0.5">
                                     <div
                                       className="p-1 text-xs hover:bg-green-50 cursor-pointer"

@@ -2,10 +2,13 @@ import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, unique: true }, // UNIQUE username
-    email: { type: String }, // optional, not used for login
+    name: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["admin"], default: "admin" },
+
+    resetToken: { type: String },
+    resetTokenExpiry: { type: Date },
   },
   { timestamps: true }
 );

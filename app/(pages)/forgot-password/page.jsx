@@ -1,36 +1,41 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Leaf } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-export default function SignUpPage() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setMessage("");
     setError("");
+    setLoading(true);
 
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
-    if (res.ok) {
-      router.push("/signin");
-    } else {
       const data = await res.json();
-      setError(data.error);
+      if (!res.ok) setError(data.error);
+      else setMessage(data.message);
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] px-4">
-      {/* ✅ Logo in top-left */}
+      {/* ✅ Logo top-left */}
       <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
         <Link href="/" className="flex items-center">
           <div className="h-10 sm:h-14 w-auto flex items-center">
@@ -46,14 +51,14 @@ export default function SignUpPage() {
         </Link>
       </div>
 
-      {/* Animated background blobs */}
+      {/* Animated blobs */}
       <div className="absolute -top-32 -left-32 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
       <div className="absolute top-1/2 -right-32 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
       <div className="absolute -bottom-32 left-1/2 w-72 h-72 bg-green-400 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
 
       {/* Card */}
       <div className="relative bg-white/95 backdrop-blur-md w-full max-w-sm sm:max-w-md rounded-2xl shadow-2xl border border-green-100 p-6 sm:p-8">
-        {/* Header with leaf icon */}
+        {/* Header */}
         <div className="text-center mb-6">
           <div className="flex justify-center mb-3">
             <div className="bg-green-100 text-[var(--color-primary)] p-3 rounded-full shadow-sm">
@@ -61,59 +66,56 @@ export default function SignUpPage() {
             </div>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Create Admin Account
+            Forgot Password
           </h1>
           <p className="text-gray-500 text-sm sm:text-base mt-1">
-            Fill in the details to register
+            Enter your email to reset your password
           </p>
         </div>
 
-        {/* Error */}
+        {/* Messages */}
         {error && (
           <div className="mb-4 text-center bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-lg text-sm">
             {error}
+          </div>
+        )}
+        {message && (
+          <div className="mb-4 text-center bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm">
+            {message}
           </div>
         )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            type="text"
-            placeholder="Unique Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full border border-gray-200 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition shadow-sm"
-            required
-          />
-
-          <input
             type="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            placeholder="Enter your email"
             className="w-full border border-gray-200 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition shadow-sm"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
-
-          <input
-            type="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full border border-gray-200 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition shadow-sm"
-            required
-          />
-
           <button
             type="submit"
-            className="w-full bg-[var(--color-primary)] hover:bg-green-900 text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 rounded-lg shadow-md transition duration-200"
+            disabled={loading}
+            className="w-full bg-[var(--color-primary)] hover:bg-green-900 text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 rounded-lg shadow-md transition duration-200 disabled:opacity-70"
           >
-            Sign Up
+            {loading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
+
+        {/* Back to sign in */}
+        <div className="mt-5 text-center">
+          <Link
+            href="/signin"
+            className="text-xs sm:text-sm text-[var(--color-primary)] font-medium hover:underline"
+          >
+            Back to Sign In
+          </Link>
+        </div>
       </div>
 
-      {/* Tailwind keyframes for animated blobs */}
+      {/* Tailwind keyframes */}
       <style jsx>{`
         .animate-blob {
           animation: blob 8s infinite;

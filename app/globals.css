@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --color-primary: #2e7d32; /* leafy green */
-  --color-secondary: #81c784;
+  --color-primary: #1b5e20; /* deep forest green */
+  --color-secondary: #4caf50; /* balanced medium green */
 }
 
 body {

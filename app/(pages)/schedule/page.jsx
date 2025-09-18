@@ -1401,7 +1401,7 @@ function WeeklyTab() {
                         return (
                           <div
                             key={slot}
-                            className="flex-1 px-1 py-0.5 text-[9px] sm:text-[11px] text-gray-700 cursor-pointer border-r border-gray-200 last:border-r-0 truncate"
+                            className="flex-1   text-[9px] sm:text-[11px] text-gray-700 cursor-pointer border-r border-gray-200 last:border-r-0 truncate"
                           >
                             <Dropdown
                               options={options}

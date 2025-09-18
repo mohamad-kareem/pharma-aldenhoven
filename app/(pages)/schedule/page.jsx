@@ -1,7 +1,10 @@
 "use client";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
 import React from "react";
 import { Plus, Minus } from "lucide-react";
+import { createPortal } from "react-dom";
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 /* ---------- constants ---------- */
 const LINES = [
   "Linie 0",
@@ -525,15 +528,237 @@ function EmployeesTab() {
   );
 }
 
-/* ---------- Weekly plan tab with collapsible Rollen ---------- */
+// Top-level (outside WeeklyTab)
+const Dropdown = React.memo(function Dropdown({
+  options,
+  shift,
+  line,
+  position,
+  dropdownId,
+  current,
+  assign,
+  activeDropdown,
+  setActiveDropdown,
+}) {
+  const triggerRef = React.useRef(null);
+  const menuRef = React.useRef(null);
 
+  const [menuPos, setMenuPos] = React.useState({ top: 0, left: 0, width: 160 });
+  const [ready, setReady] = React.useState(false);
+  const [filter, setFilter] = React.useState("");
+  const [highlightIndex, setHighlightIndex] = React.useState(0);
+
+  const isOpen = activeDropdown === dropdownId;
+
+  // Reset local search when (re)opened
+  React.useEffect(() => {
+    if (isOpen) {
+      setFilter("");
+      setHighlightIndex(0);
+    }
+  }, [isOpen]);
+
+  const openMenu = () => setActiveDropdown(dropdownId);
+  const closeMenu = () => {
+    setActiveDropdown(null);
+    setReady(false);
+  };
+
+  // Position & outside-close logic
+  useIsomorphicLayoutEffect(() => {
+    if (!isOpen || !triggerRef.current) return;
+
+    const MENU_WIDTH = 160;
+    const MENU_MAX_HEIGHT = 192;
+
+    const compute = () => {
+      const r = triggerRef.current?.getBoundingClientRect();
+      if (!r) return;
+
+      let top = r.bottom + 4;
+      if (top + MENU_MAX_HEIGHT > window.innerHeight - 8) {
+        top = Math.max(8, r.top - MENU_MAX_HEIGHT - 4);
+      }
+
+      let left = Math.min(
+        Math.max(8, r.left),
+        window.innerWidth - MENU_WIDTH - 8
+      );
+
+      setMenuPos({ top, left, width: MENU_WIDTH });
+      setReady(true);
+    };
+
+    compute();
+
+    const onScrollOrResize = () => requestAnimationFrame(compute);
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
+
+    const onDocPointerDown = (e) => {
+      const insideMenu = menuRef.current?.contains(e.target);
+      const insideTrigger = triggerRef.current?.contains(e.target);
+      if (!insideMenu && !insideTrigger) closeMenu();
+    };
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") closeMenu();
+    };
+
+    document.addEventListener("pointerdown", onDocPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.removeEventListener("scroll", onScrollOrResize, true);
+      window.removeEventListener("resize", onScrollOrResize);
+      document.removeEventListener("pointerdown", onDocPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen]);
+
+  const filtered = options.filter((emp) =>
+    emp.name.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  return (
+    <div className="relative">
+      {/* Trigger pill */}
+      <div
+        ref={triggerRef}
+        className={`w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate ${
+          current?.color === "red"
+            ? "bg-red-400"
+            : current?.color === "blue"
+            ? "bg-blue-500"
+            : current?.color === "green"
+            ? "bg-green-500"
+            : ""
+        }`}
+        onClick={() => (isOpen ? closeMenu() : openMenu())}
+      >
+        <span className="truncate">
+          {current?.employee?.name || current?.customName || ""}
+        </span>
+      </div>
+
+      {/* Portal menu */}
+      {isOpen &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className="fixed z-[999999] bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto"
+            style={{
+              top: menuPos.top,
+              left: menuPos.left,
+              width: menuPos.width,
+              visibility: ready ? "visible" : "hidden",
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            {/* Search input (local state!) */}
+            <input
+              autoFocus
+              type="text"
+              value={filter}
+              onChange={(e) => {
+                setFilter(e.target.value);
+                setHighlightIndex(0);
+              }}
+              placeholder="Type name..."
+              className="w-full p-1 text-xs border-b border-gray-200 outline-none"
+            />
+
+            {/* Clear */}
+            <div
+              className="p-1 text-xs hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                assign({
+                  shift,
+                  line,
+                  position,
+                  employeeId: null,
+                  customName: "",
+                });
+                closeMenu();
+              }}
+            >
+              -- Clear --
+            </div>
+
+            {/* Employees */}
+            {filtered.map((emp, idx) => (
+              <div
+                key={emp._id}
+                className={`p-1 text-xs truncate ${
+                  idx === highlightIndex ? "bg-green-100" : ""
+                } hover:bg-green-50 cursor-pointer`}
+                onClick={() => {
+                  assign({ shift, line, position, employeeId: emp._id });
+                  closeMenu();
+                }}
+              >
+                {emp.name}
+              </div>
+            ))}
+
+            {/* Free text */}
+            {filter && (
+              <div
+                className="p-1 text-xs text-blue-600 hover:bg-blue-50 cursor-pointer"
+                onClick={() => {
+                  assign({
+                    shift,
+                    line,
+                    position,
+                    employeeId: null,
+                    customName: filter,
+                  });
+                  closeMenu();
+                }}
+              >
+                ➕ Add "{filter}"
+              </div>
+            )}
+
+            {/* Colors */}
+            <div className="flex gap-1 p-1 border-t border-gray-200">
+              {["red", "blue", "green"].map((c) => (
+                <div
+                  key={c}
+                  className={`w-5 h-5 rounded-full cursor-pointer ${
+                    c === "red"
+                      ? "bg-red-500"
+                      : c === "blue"
+                      ? "bg-blue-500"
+                      : "bg-green-500"
+                  }`}
+                  onClick={() => {
+                    assign({
+                      shift,
+                      line,
+                      position,
+                      employeeId: current?.employee?._id || null,
+                      customName: current?.customName || "",
+                      color: c,
+                    });
+                    closeMenu();
+                  }}
+                  title={c}
+                />
+              ))}
+            </div>
+          </div>,
+          document.body
+        )}
+    </div>
+  );
+});
+/* ---------- Weekly plan tab with collapsible Rollen ---------- */
 function WeeklyTab() {
   const [employees, setEmployees] = useState([]);
   const [date, setDate] = useState(dayStart(new Date().toISOString()));
   const [shiftData, setShiftData] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const [filter, setFilter] = useState("");
-  const [highlightIndex, setHighlightIndex] = useState(0);
+
   const [absences, setAbsences] = useState([]);
   const [rollenCollapsed, setRollenCollapsed] = useState(true);
 
@@ -573,165 +798,6 @@ function WeeklyTab() {
       }, {}),
     [employees]
   );
-
-  function Dropdown({
-    options,
-    shift,
-    line,
-    position,
-    dropdownId,
-    current,
-    date,
-    isAbsent,
-    assign,
-    activeDropdown,
-    setActiveDropdown,
-    filter,
-    setFilter,
-    highlightIndex,
-    setHighlightIndex,
-  }) {
-    const dropdownRef = useRef(null);
-
-    // Close dropdown on outside click
-    useEffect(() => {
-      function handleClickOutside(e) {
-        if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-          setActiveDropdown(null);
-          setFilter(""); // optional: reset filter when closing
-        }
-      }
-
-      if (activeDropdown === dropdownId) {
-        document.addEventListener("mousedown", handleClickOutside);
-      }
-
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [activeDropdown, dropdownId, setActiveDropdown]);
-
-    const filtered = options.filter((emp) =>
-      emp.name.toLowerCase().includes(filter.toLowerCase())
-    );
-
-    return (
-      <div ref={dropdownRef} className="relative">
-        <div
-          className={`w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate ${
-            current?.color === "red"
-              ? "bg-red-400"
-              : current?.color === "blue"
-              ? "bg-blue-500"
-              : current?.color === "green"
-              ? "bg-green-500"
-              : ""
-          }`}
-          onClick={() =>
-            setActiveDropdown(activeDropdown === dropdownId ? null : dropdownId)
-          }
-        >
-          <span className="truncate">
-            {current?.employee?.name || current?.customName || ""}
-          </span>
-        </div>
-
-        {activeDropdown === dropdownId && (
-          <div className="absolute z-20 left-0 mt-1 w-40 bg-white border border-gray-300 rounded-sm shadow-lg max-h-48 overflow-y-auto">
-            {/* Search box */}
-            <input
-              autoFocus
-              type="text"
-              value={filter}
-              onChange={(e) => {
-                setFilter(e.target.value);
-                setHighlightIndex(0);
-              }}
-              placeholder="Type name..."
-              className="w-full p-1 text-xs border-b border-gray-200 outline-none"
-            />
-
-            {/* Clear option */}
-            <div
-              className="p-1 text-xs hover:bg-gray-100 cursor-pointer"
-              onMouseDown={() => {
-                assign({
-                  shift,
-                  line,
-                  position,
-                  employeeId: null,
-                  customName: "",
-                });
-                setActiveDropdown(null);
-                setFilter("");
-              }}
-            >
-              -- Clear --
-            </div>
-
-            {/* Employee matches */}
-            {filtered.map((emp, idx) => (
-              <div
-                key={emp._id}
-                className={`p-1 text-xs truncate ${
-                  idx === highlightIndex ? "bg-green-100" : ""
-                } hover:bg-green-50 cursor-pointer`}
-                onMouseDown={() => {
-                  assign({ shift, line, position, employeeId: emp._id });
-                  setActiveDropdown(null);
-                  setFilter("");
-                }}
-              >
-                {emp.name}
-              </div>
-            ))}
-
-            {/* Free text option */}
-            {filter && (
-              <div
-                className="p-1 text-xs text-blue-600 hover:bg-blue-50 cursor-pointer"
-                onMouseDown={() => {
-                  assign({
-                    shift,
-                    line,
-                    position,
-                    employeeId: null,
-                    customName: filter,
-                  });
-                  setActiveDropdown(null);
-                  setFilter("");
-                }}
-              >
-                ➕ Add "{filter}"
-              </div>
-            )}
-
-            {/* Color options */}
-            <div className="flex gap-1 p-1 border-t border-gray-200">
-              {["red", "blue", "green"].map((c) => (
-                <div
-                  key={c}
-                  className={`w-5 h-5 rounded-full cursor-pointer bg-${c}-500`}
-                  onMouseDown={() => {
-                    assign({
-                      shift,
-                      line,
-                      position,
-                      employeeId: current?.employee?._id || null,
-                      customName: current?.customName || "",
-                      color: c,
-                    });
-                    setActiveDropdown(null);
-                    setFilter("");
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
 
   async function assign({
     shift,
@@ -865,7 +931,7 @@ function WeeklyTab() {
     <title>Schichtplan KW ${week}/${year}</title>
     <style>
       @media print {
-        /* Force backgrounds and gradients to appear */
+        /* Ensure colors/gradients are kept */
         * {
           -webkit-print-color-adjust: exact !important;
           color-adjust: exact !important;
@@ -914,7 +980,7 @@ function WeeklyTab() {
 
         .print-shift-header {
           background: linear-gradient(to right, #2d5c2a, #3a7a34);
-          background-color: #2d5c2a; /* fallback if gradient is stripped */
+          background-color: #2d5c2a; /* fallback */
           color: #ffffff;
           padding: 4px 6px;
           font-weight: bold;
@@ -925,8 +991,9 @@ function WeeklyTab() {
         }
 
         .print-table {
-          width: 100%;
+          width: 100%;              /* ✅ keep full width */
           border-collapse: collapse;
+          table-layout: fixed;      /* ✅ keep columns evenly spaced */
         }
 
         .print-table th {
@@ -935,10 +1002,19 @@ function WeeklyTab() {
           font-weight: bold;
         }
 
-        .print-table th, .print-table td {
+        .print-table th,
+        .print-table td {
           border: 1px solid #b8d0b5;
-          padding: 2px 3px;
+          padding: 1px 2px;
           text-align: center;
+          height: 12px; 
+        }
+
+        /* ✅ only employee cells are adjusted */
+        .print-table td.print-name-cell {
+          text-align: left !important;
+          padding: 0 2px !important;
+          white-space: nowrap;  /* no text wrapping */
         }
 
         .print-role-header {
@@ -949,12 +1025,6 @@ function WeeklyTab() {
 
         .print-line-header {
           background-color: #e8f4e6;
-          font-weight: bold;
-        }
-
-        .print-role-cell {
-          background-color: #f0f8ef;
-          text-align: left;
           font-weight: bold;
         }
 
@@ -990,13 +1060,9 @@ function WeeklyTab() {
           overflow: hidden;
         }
 
-        .print-left-table th, .print-left-table td {
+        .print-left-table th,
+        .print-left-table td {
           font-size: 8px;
-        }
-
-        .print-name-cell {
-          text-align: left;
-          padding-left: 4px;
         }
       }
     </style>
@@ -1146,7 +1212,7 @@ function WeeklyTab() {
   };
 
   return (
-    <div className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto">
+    <div className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto relative z-0 overflow-visible">
       {/* Header with print button */}
       <div className="flex items-center justify-between mb-2 p-2 bg-white rounded-sm border border-gray-300">
         <h2 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">
@@ -1258,15 +1324,9 @@ function WeeklyTab() {
                               position={role}
                               dropdownId={dropdownId}
                               current={current}
-                              date={date}
-                              isAbsent={isAbsent}
                               assign={assign}
                               activeDropdown={activeDropdown}
                               setActiveDropdown={setActiveDropdown}
-                              filter={filter}
-                              setFilter={setFilter}
-                              highlightIndex={highlightIndex}
-                              setHighlightIndex={setHighlightIndex}
                             />
                           </td>
                         </tr>
@@ -1312,31 +1372,26 @@ function WeeklyTab() {
                         const dropdownId = `${name}-${line.name}-${pos}`;
                         return (
                           <td
-                            key={line.name}
+                            key={`${name}-${line.name}-${pos}`}
                             className="border-b border-r border-gray-300 p-0.5 relative"
                           >
                             <Dropdown
                               options={options}
                               shift={name}
                               line={line.name}
-                              position={pos}
+                              position={pos} // ✅ use pos, not role
                               dropdownId={dropdownId}
                               current={current}
-                              date={date}
-                              isAbsent={isAbsent}
                               assign={assign}
                               activeDropdown={activeDropdown}
                               setActiveDropdown={setActiveDropdown}
-                              filter={filter}
-                              setFilter={setFilter}
-                              highlightIndex={highlightIndex}
-                              setHighlightIndex={setHighlightIndex}
                             />
                           </td>
                         );
                       })}
                     </tr>
                   ))}
+
                   {[1, 2, 3, 4, 5, 6].map((rowNum) => (
                     <tr
                       key={rowNum}
@@ -1352,25 +1407,19 @@ function WeeklyTab() {
                         const dropdownId = `${name}-${line.name}-${pos}`;
                         return (
                           <td
-                            key={line.name}
+                            key={`${name}-${line.name}-${pos}`}
                             className="border-b border-r border-gray-300 p-0.5 relative"
                           >
                             <Dropdown
                               options={options}
                               shift={name}
                               line={line.name}
-                              position={pos}
+                              position={pos} // ✅ use pos = `Position ${rowNum}`
                               dropdownId={dropdownId}
                               current={current}
-                              date={date}
-                              isAbsent={isAbsent}
                               assign={assign}
                               activeDropdown={activeDropdown}
                               setActiveDropdown={setActiveDropdown}
-                              filter={filter}
-                              setFilter={setFilter}
-                              highlightIndex={highlightIndex}
-                              setHighlightIndex={setHighlightIndex}
                             />
                           </td>
                         );

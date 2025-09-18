@@ -1078,6 +1078,130 @@ function WeeklyTab() {
         <div class="print-date">${printDate}</div>
       </div>
 `);
+    // --- Special Roles + Abwesend ---
+    printWindow.document.write(`
+  <div style="
+    border:0.5px solid #d1d5db; 
+    border-radius:2px; 
+    padding:4px 6px; 
+    margin-bottom:4px;   /* 👈 small gap before Früh table */
+    background:#ffffff;
+  ">
+  
+    <!-- Special Roles Grid -->
+    <div style="
+      display:grid; 
+      grid-template-columns:repeat(5,1fr); 
+      gap:6px; 
+      font-size:8px; 
+      margin-bottom:6px;
+    ">
+`);
+
+    ["Kantine", "Springer", "Anlernen", "Qualifizierung", "Lager"].forEach(
+      (special) => {
+        printWindow.document.write(`
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <label style="
+          font-size:8px; 
+          font-weight:500; 
+          margin-bottom:2px; 
+          text-align:center; 
+          color:#374151;
+        ">
+          ${special}
+        </label>
+        <div style="
+          display:flex; 
+          border:0.5px solid #d1d5db; 
+          border-radius:3px; 
+          overflow:hidden; 
+          width:100%; 
+          min-height:18px; 
+          background:#fff;
+        ">
+    `);
+
+        [1, 2].forEach((slot, idx) => {
+          const pos = `${special} ${slot}`;
+          const current = currentAssigned("", pos, SPECIAL_SHIFT);
+
+          printWindow.document.write(`
+          <div style="
+            flex:1; 
+            font-size:8px; 
+            padding:2px 3px; 
+            border-right:${idx === 0 ? "0.5px solid #e5e7eb" : "none"}; 
+            white-space:nowrap; 
+            overflow:hidden; 
+            text-overflow:ellipsis;
+            color:#111827;
+          ">
+            ${getCellDisplay(current) || ""}
+          </div>
+      `);
+        });
+
+        printWindow.document.write(`
+        </div>
+      </div>
+    `);
+      }
+    );
+
+    printWindow.document.write(`
+    </div>
+
+    <!-- Abwesend Section -->
+    <div>
+      <label style="
+        font-size:8px; 
+        font-weight:600; 
+        margin-bottom:2px; 
+        display:block; 
+        color:#374151;
+      ">
+        Abwesend
+      </label>
+      <div style="
+        font-size:8px; 
+        color:#111827; 
+        border:1px solid #e5e7eb; 
+        border-radius:3px; 
+        padding:2px 3px; 
+        background:#f9fafb;
+      ">
+`);
+
+    const filteredAbsences = Array.from(
+      new Map(
+        absences
+          .filter(
+            (a) => a.date.startsWith(date) && ["U", "K", "ZA"].includes(a.type)
+          )
+          .map((a) => [a.employee?._id, a])
+      ).values()
+    );
+
+    if (filteredAbsences.length > 0) {
+      printWindow.document.write(
+        filteredAbsences
+          .map((a) => `${a.employee?.name} (${a.type})`)
+          .join(", ")
+      );
+    } else {
+      printWindow.document.write(`
+        <span style="color:#9ca3af; font-style:italic;">
+          Keine Abwesenheiten
+        </span>
+  `);
+    }
+
+    printWindow.document.write(`
+      </div>
+    </div>
+  </div>
+`);
 
     // Add each shift to the print document
     SHIFTS.forEach(({ name, time }) => {

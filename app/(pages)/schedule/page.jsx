@@ -628,7 +628,7 @@ const Dropdown = React.memo(function Dropdown({
       {/* Trigger pill */}
       <div
         ref={triggerRef}
-        className={`w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300 rounded-sm min-h-6 flex items-center truncate ${
+        className={`w-full p-0.5 text-xs cursor-pointer border border-transparent hover:border-green-300  min-h-6 flex items-center truncate ${
           current?.color === "red"
             ? "bg-red-400"
             : current?.color === "blue"
@@ -765,7 +765,7 @@ function WeeklyTab() {
 
   const [absences, setAbsences] = useState([]);
   const [rollenCollapsed, setRollenCollapsed] = useState(true);
-
+  const SPECIAL_SHIFT = "__SPECIAL__";
   useEffect(() => {
     fetch("/api/employees")
       .then((r) => r.json())
@@ -1246,7 +1246,117 @@ function WeeklyTab() {
           </div>
         </div>
       </div>
+      {/* ✅ Special Roles Section (only once) */}
+      <div className="mt-6 bg-white rounded-lg shadow border border-gray-200">
+        {/* Header */}
 
+        {/* Roles + Abwesend */}
+        <div className="p-3 space-y-4">
+          {/* Rollen Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {["Kantine", "Springer", "Anlernen", "Qualifizierung", "Lager"].map(
+              (special) => {
+                const options = grouped[special] ?? employees;
+
+                return (
+                  <div key={special} className="flex flex-col items-center">
+                    <label className="text-[11px] font-medium text-gray-600 mb-1 text-center">
+                      {special}
+                    </label>
+
+                    {/* One input container holding 2 slots */}
+                    <div className="flex border border-gray-300 rounded-sm bg-white overflow-hidden w-full">
+                      {[1, 2].map((slot) => {
+                        const dropdownId = `special-${special}-${slot}`;
+                        const position = `${special} ${slot}`;
+                        const current = currentAssigned(
+                          "",
+                          position,
+                          SPECIAL_SHIFT
+                        );
+
+                        return (
+                          <div
+                            key={slot}
+                            className="flex-1 px-2 py-1 text-xs text-gray-700 cursor-pointer border-r border-gray-200 last:border-r-0"
+                          >
+                            <Dropdown
+                              options={options}
+                              shift={SPECIAL_SHIFT}
+                              line=""
+                              position={position}
+                              dropdownId={dropdownId}
+                              current={current}
+                              assign={assign}
+                              activeDropdown={activeDropdown}
+                              setActiveDropdown={setActiveDropdown}
+                              placeholder="Mitarbeiter…"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+            )}
+          </div>
+
+          {/* Abwesend Section */}
+          <div>
+            <label className="text-[11px] font-medium text-gray-600 mb-1">
+              Abwesend
+            </label>
+            <div className="flex flex-wrap gap-1.5 bg-gray-50 border border-gray-200 rounded-sm p-2 min-h-[32px]">
+              {Array.from(
+                new Map(
+                  absences
+                    .filter(
+                      (a) =>
+                        a.date.startsWith(date) &&
+                        ["U", "K", "ZA"].includes(a.type)
+                    )
+                    .map((a) => [a.employee?._id, a])
+                ).values()
+              ).map((a) => {
+                let badgeClasses =
+                  "px-2 py-0.5 rounded-full text-[11px] font-medium border";
+                if (a.type === "U")
+                  badgeClasses +=
+                    " bg-green-200 text-gray-800 border-green-200";
+                else if (a.type === "K")
+                  badgeClasses += " bg-red-200 text-gray-800 border-red-200";
+                else if (a.type === "ZA")
+                  badgeClasses +=
+                    " bg-yellow-200 text-gray-800 border-yellow-200";
+
+                return (
+                  <span key={a.employee?._id} className={badgeClasses}>
+                    {a.employee?.name} ({a.type})
+                  </span>
+                );
+              })}
+
+              {/* Empty state */}
+              {Array.from(
+                new Map(
+                  absences
+                    .filter(
+                      (a) =>
+                        a.date.startsWith(date) &&
+                        ["U", "K", "ZA"].includes(a.type)
+                    )
+                    .map((a) => [a.employee?._id, a])
+                ).values()
+              ).length === 0 && (
+                <span className="text-gray-400 text-[11px] italic">
+                  Keine Abwesenheiten
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
       {/* Loop over Früh / Spät / Nacht */}
       {SHIFTS.map(({ name, time }) => (
         <div
@@ -1256,7 +1366,7 @@ function WeeklyTab() {
           {/* Shift header */}
           <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-green-600 to-green-800 text-white">
             <div className="flex items-center gap-1">
-              <div className="px-1 py-0.5 rounded-sm bg-green-900 text-white font-semibold text-xs">
+              <div className="px-1 py-0.5  bg-green-900 text-white font-semibold text-xs">
                 {name}
               </div>
               <div className="text-green-100 text-xs">{time}</div>
@@ -1303,7 +1413,7 @@ function WeeklyTab() {
                           <td className="border-b border-r border-gray-300 p-1 text-xs truncate w-32">
                             {role}
                           </td>
-                          <td className="border-b border-gray-300 p-1 text-xs w-40 relative">
+                          <td className="border-b border-gray-300  text-xs w-40 relative">
                             <Dropdown
                               options={options}
                               shift={name}
@@ -1360,7 +1470,7 @@ function WeeklyTab() {
                         return (
                           <td
                             key={`${name}-${line.name}-${pos}`}
-                            className="border-b border-r border-gray-300 p-0.5 relative"
+                            className="border-b border-r border-gray-300  relative"
                           >
                             <Dropdown
                               options={options}
@@ -1395,7 +1505,7 @@ function WeeklyTab() {
                         return (
                           <td
                             key={`${name}-${line.name}-${pos}`}
-                            className="border-b border-r border-gray-300 p-0.5 relative"
+                            className="border-b border-r border-gray-300  relative"
                           >
                             <Dropdown
                               options={options}
@@ -1531,10 +1641,10 @@ function UrlaubsplanungTab() {
   // Add F, S, N
   const colors = {
     U: "bg-green-600",
-    ZA: "bg-blue-500",
-    K: "bg-yellow-500",
-    F: "bg-red-500",
-    S: "bg-gray-400",
+    ZA: "bg-yellow-600",
+    K: "bg-red-500",
+    F: "bg-pink-400",
+    S: "bg-indigo-600",
     N: "bg-black/80",
     Feiertag: "bg-purple-400",
   };

@@ -185,7 +185,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link
               href="/signin"
-              className="px-5 py-2.5 sm:px-6 sm:py-3 rounded-lg bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-dark)] transition"
+              className="px-5 py-2.5 sm:px-6 sm:py-3 rounded-lg bg-[var(--color-primary)] text-white font-semibold hover:bg-green-700 transition"
               onClick={handleLinkClick}
             >
               Anmeldung

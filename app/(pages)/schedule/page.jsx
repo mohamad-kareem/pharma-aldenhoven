@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
 import React from "react";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Printer } from "lucide-react";
 import { createPortal } from "react-dom";
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -1219,14 +1219,17 @@ function WeeklyTab() {
     <div className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto relative z-0 overflow-visible">
       {/* Header with print button */}
       <div className="flex items-center justify-between mb-2 p-2 bg-white rounded-sm border border-gray-300">
-        <h2 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">
+        <h2 className="text-xs sm:text-lg font-bold text-gray-800 leading-tight">
           KW {week} / {year}
         </h2>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-green-50 p-1 rounded-sm">
-            <label className="text-[10px] sm:text-xs font-medium text-gray-700">
-              Datum:
-            </label>
+        <div className="flex items-center ">
+          <button
+            onClick={handlePrint}
+            className=" hover:bg-green-100 text-white font-medium py-1.5 px-2 rounded text-xs flex items-center gap-1 cursor-pointer mr-1 bg-green-50  hover:border-green-300 transition-colors"
+          >
+            <Printer className="w-4 h-4 text-green-500 font-bold" />
+          </button>
+          <div className="flex items-center gap-1   rounded-sm">
             <div className="flex items-center gap-2">
               {/* 
 <span className="text-[10px] sm:text-xs font-medium text-gray-600">
@@ -1241,25 +1244,6 @@ function WeeklyTab() {
               />
             </div>
           </div>
-          <button
-            onClick={handlePrint}
-            className="bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded text-xs flex items-center gap-1"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m4 4h6a2 2 0 002-2v-4a2 2 0 00-2-2h-6a2 2 0 00-2 2v4a2 2 0 002 2z"
-              />
-            </svg>
-            Drucken
-          </button>
         </div>
       </div>
 
@@ -1286,7 +1270,6 @@ function WeeklyTab() {
               ) : (
                 <Minus className="h-5 w-5 text-yellow-400" aria-hidden />
               )}
-              <span>Rollen</span>
             </button>
           </div>
 

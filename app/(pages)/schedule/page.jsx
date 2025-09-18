@@ -79,10 +79,11 @@ function EmployeesTab() {
   const [activeRole, setActiveRole] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [editingEmp, setEditingEmp] = useState(null); // {_id, name, role}
+  const [editingEmp, setEditingEmp] = useState(null);
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+
   useEffect(() => {
     fetchEmployees();
   }, []);
@@ -128,7 +129,6 @@ function EmployeesTab() {
       if (!res.ok) {
         alert(data?.error || "Failed to update employee");
       } else {
-        // optimistic update in list
         setEmployees((prev) =>
           prev.map((e) => (e._id === editingEmp._id ? data : e))
         );
@@ -206,29 +206,31 @@ function EmployeesTab() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-2  py-1">
-      <div className="w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto space-y-4">
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900">
+            <h1 className="text-xl font-semibold text-gray-900">
               Team Management
             </h1>
-            <p className="text-xs sm:text-sm text-gray-600">
-              {employees.length} team members
+            <p className="text-sm text-gray-600 mt-1">
+              {employees.length} team members • {Object.keys(roleCounts).length}{" "}
+              roles
             </p>
           </div>
+
           {/* Search */}
           <div className="relative w-full sm:w-64">
-            <span className="absolute inset-y-0 left-2 flex items-center text-gray-400">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
-                className="w-4 h-4"
+                className="h-4 w-4 text-gray-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -240,22 +242,22 @@ function EmployeesTab() {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-            </span>
+            </div>
             <input
               type="text"
               placeholder="Search employees..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-7 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-green-500"
+              className="block w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
             />
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex overflow-x-auto gap-2 pb-2 custom-scrollbar">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setActiveRole("All")}
-            className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg whitespace-nowrap ${
+            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
               activeRole === "All"
                 ? "bg-green-100 text-green-800 font-medium"
                 : "text-gray-600 hover:bg-gray-100"
@@ -268,7 +270,7 @@ function EmployeesTab() {
             <button
               key={role}
               onClick={() => setActiveRole(role)}
-              className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg whitespace-nowrap ${
+              className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
                 activeRole === role
                   ? "bg-green-100 text-green-800 font-medium"
                   : "text-gray-600 hover:bg-gray-100"
@@ -279,21 +281,22 @@ function EmployeesTab() {
           ))}
         </div>
 
-        {/* Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Content Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Employee List */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-            <div className="px-3 sm:px-6 py-2 sm:py-4 border-b border-gray-100">
-              <h2 className="font-semibold text-sm sm:text-base text-gray-800">
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <h2 className="text-sm font-medium text-gray-800">
                 Team Members
               </h2>
             </div>
-            <div className="divide-y divide-gray-100">
+
+            <div className="divide-y divide-gray-200">
               {filteredEmployees.length > 0 ? (
                 filteredEmployees.map((employee) => (
                   <div
                     key={employee._id}
-                    className="px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between"
+                    className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-xs font-medium text-green-800">
@@ -311,13 +314,12 @@ function EmployeesTab() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => openEdit(employee)}
-                        className="text-gray-500 hover:text-emerald-600 p-1 rounded-md hover:bg-emerald-50"
+                        className="text-gray-400 hover:text-green-600 p-1 rounded transition-colors"
                         title="Edit employee"
                       >
-                        {/* pencil icon */}
                         <svg
                           className="w-4 h-4"
                           viewBox="0 0 24 24"
@@ -337,7 +339,7 @@ function EmployeesTab() {
                         onClick={() =>
                           deleteEmployee(employee._id, employee.name)
                         }
-                        className="text-gray-400 hover:text-red-500 p-1 rounded-md hover:bg-red-50"
+                        className="text-gray-400 hover:text-red-600 p-1 rounded transition-colors"
                         title="Delete employee"
                       >
                         <svg
@@ -358,39 +360,40 @@ function EmployeesTab() {
                   </div>
                 ))
               ) : (
-                <div className="px-3 py-6 text-center text-sm text-gray-500">
+                <div className="px-4 py-6 text-center text-sm text-gray-500">
                   No employees found
                 </div>
               )}
             </div>
           </div>
 
-          {/* Add Employee Form */}
-          <div>
-            <div className="bg-white rounded-lg shadow border border-gray-200 p-4 sm:p-5 sticky top-4">
-              <h2 className="font-semibold text-gray-800 mb-4 text-sm sm:text-base">
+          {/* Sidebar - Add Employee & Stats */}
+          <div className="space-y-6">
+            {/* Add Employee Form */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <h2 className="text-sm font-medium text-gray-800 mb-3">
                 Add Team Member
               </h2>
-              <form onSubmit={addEmployee} className="space-y-4">
+              <form onSubmit={addEmployee} className="space-y-3">
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Full Name
                   </label>
                   <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter full name"
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500"
+                    className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Role
                   </label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500"
+                    className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
                   >
                     <option value="">Select a role</option>
                     {ROLE_ORDER.map((r) => (
@@ -403,58 +406,60 @@ function EmployeesTab() {
                 <button
                   type="submit"
                   disabled={!name || !role}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-medium py-2 rounded-lg text-sm transition-colors"
+                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-medium py-2 rounded-md text-sm transition-colors"
                 >
                   Add Team Member
                 </button>
               </form>
+            </div>
 
-              {/* Role Distribution */}
-              <div className="mt-6 pt-4 border-t border-gray-100">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                  Team Distribution
-                </h3>
-                <div className="space-y-2">
-                  {ROLE_ORDER.map((r) => (
-                    <div key={r} className="flex items-center">
-                      <div className="w-24 text-xs sm:text-sm text-gray-600 truncate">
-                        {r}
-                      </div>
-                      <div className="flex-1 ml-2">
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-green-500 rounded-full"
-                            style={{
-                              width: `${
-                                ((roleCounts[r] || 0) /
-                                  Math.max(1, employees.length)) *
-                                100
-                              }%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div className="w-6 sm:w-8 text-right text-xs text-gray-500 ml-2">
-                        {roleCounts[r] || 0}
+            {/* Role Distribution */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <h3 className="text-sm font-medium text-gray-800 mb-3">
+                Team Distribution
+              </h3>
+              <div className="space-y-3">
+                {ROLE_ORDER.map((r) => (
+                  <div key={r} className="flex items-center">
+                    <div className="w-20 text-xs text-gray-600 truncate">
+                      {r}
+                    </div>
+                    <div className="flex-1 ml-2">
+                      <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-green-500 rounded-full"
+                          style={{
+                            width: `${
+                              ((roleCounts[r] || 0) /
+                                Math.max(1, employees.length)) *
+                              100
+                            }%`,
+                          }}
+                        ></div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="w-6 text-right text-xs text-gray-500 ml-2">
+                      {roleCounts[r] || 0}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-sm bg-white rounded-lg shadow-lg border border-gray-200">
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-lg border border-gray-200">
+            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-gray-800">
                 Edit Employee
               </h3>
               <button
                 onClick={closeEdit}
-                className="p-1 rounded hover:bg-gray-100 text-gray-500"
+                className="p-1 rounded hover:bg-gray-100 text-gray-500 transition-colors"
                 title="Close"
               >
                 <svg
@@ -473,7 +478,7 @@ function EmployeesTab() {
               </button>
             </div>
 
-            <form onSubmit={saveEdit} className="px-4 py-4 space-y-3">
+            <form onSubmit={saveEdit} className="px-4 py-4 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   Full Name
@@ -481,7 +486,7 @@ function EmployeesTab() {
                 <input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
                   placeholder="Full name"
                 />
               </div>
@@ -493,7 +498,7 @@ function EmployeesTab() {
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
                 >
                   <option value="">Select a role</option>
                   {ROLE_ORDER.map((r) => (
@@ -504,20 +509,20 @@ function EmployeesTab() {
                 </select>
               </div>
 
-              <div className="pt-1 flex items-center justify-end gap-2">
+              <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={closeEdit}
-                  className="px-3 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700"
+                  className="px-3 py-2 text-sm rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit || !editName || !editRole}
-                  className="px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white disabled:bg-gray-300 hover:bg-emerald-700"
+                  className="px-3 py-2 text-sm rounded-md bg-green-600 text-white disabled:bg-gray-300 hover:bg-green-700 transition-colors"
                 >
-                  {savingEdit ? "Saving..." : "Save"}
+                  {savingEdit ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>
@@ -1777,7 +1782,7 @@ function dayKey(d) {
 }
 /* ---------- main page (tabs) ---------- */
 export default function SchedulePage() {
-  const [tab, setTab] = useState("urlaub");
+  const [tab, setTab] = useState("employees");
   return (
     <div className="px-1 sm:px-6 py-4 sm:py-4 min-h-screen bg-gray-50">
       {/* Tabs */}

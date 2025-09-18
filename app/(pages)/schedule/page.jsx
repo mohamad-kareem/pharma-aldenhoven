@@ -205,32 +205,31 @@ function EmployeesTab() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-green-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-green-50 p-2 sm:p-4 rounded-xl">
+      <div className="max-w-7xl mx-auto space-y-3">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-base sm:text-xl font-semibold text-gray-900">
               Team Management
             </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              {employees.length} team members • {Object.keys(roleCounts).length}{" "}
-              roles
+            <p className="text-xs text-gray-600 mt-1">
+              {employees.length} team members
             </p>
           </div>
 
           {/* Search */}
           <div className="relative w-full sm:w-64">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
               <svg
-                className="h-4 w-4 text-gray-400"
+                className="h-3.5 w-3.5 text-gray-400 sm:h-4 sm:w-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -248,16 +247,16 @@ function EmployeesTab() {
               placeholder="Search employees..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
+              className="block w-full pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
             />
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex overflow-x-auto gap-2 sm:gap-0 pb-1 custom-scrollbar">
           <button
             onClick={() => setActiveRole("All")}
-            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+            className={`px-2 py-2 text-xs sm:text-xs rounded-md transition-colors whitespace-nowrap flex-shrink-0 ${
               activeRole === "All"
                 ? "bg-green-100 text-green-800 font-medium"
                 : "text-gray-600 hover:bg-gray-100"
@@ -270,7 +269,7 @@ function EmployeesTab() {
             <button
               key={role}
               onClick={() => setActiveRole(role)}
-              className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+              className={`px-3 py-2 text-xs sm:text-sm rounded-md transition-colors whitespace-nowrap flex-shrink-0 ${
                 activeRole === role
                   ? "bg-green-100 text-green-800 font-medium"
                   : "text-gray-600 hover:bg-gray-100"

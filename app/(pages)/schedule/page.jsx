@@ -1248,24 +1248,23 @@ function WeeklyTab() {
       </div>
       {/* ✅ Special Roles Section (only once) */}
       <div className="mt-6 bg-white rounded-lg shadow border border-gray-200">
-        {/* Header */}
-
         {/* Roles + Abwesend */}
         <div className="p-3 space-y-4">
           {/* Rollen Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
             {["Kantine", "Springer", "Anlernen", "Qualifizierung", "Lager"].map(
               (special) => {
                 const options = grouped[special] ?? employees;
 
                 return (
                   <div key={special} className="flex flex-col items-center">
-                    <label className="text-[11px] font-medium text-gray-600 mb-1 text-center">
+                    {/* Label */}
+                    <label className="text-[10px] sm:text-[11px] font-medium text-gray-600 mb-1 text-center">
                       {special}
                     </label>
 
-                    {/* One input container holding 2 slots */}
-                    <div className="flex border border-gray-300 rounded-sm bg-white overflow-hidden w-full">
+                    {/* Shared input container */}
+                    <div className="flex w-full border border-gray-300 rounded bg-white overflow-hidden">
                       {[1, 2].map((slot) => {
                         const dropdownId = `special-${special}-${slot}`;
                         const position = `${special} ${slot}`;
@@ -1278,7 +1277,7 @@ function WeeklyTab() {
                         return (
                           <div
                             key={slot}
-                            className="flex-1 px-2 py-1 text-xs text-gray-700 cursor-pointer border-r border-gray-200 last:border-r-0"
+                            className="flex-1 px-1 py-0.5 text-[9px] sm:text-[11px] text-gray-700 cursor-pointer border-r border-gray-200 last:border-r-0 truncate"
                           >
                             <Dropdown
                               options={options}
@@ -1291,6 +1290,7 @@ function WeeklyTab() {
                               activeDropdown={activeDropdown}
                               setActiveDropdown={setActiveDropdown}
                               placeholder="Mitarbeiter…"
+                              className="w-full border-none outline-none bg-transparent text-gray-700 text-[9px] sm:text-[11px] truncate"
                             />
                           </div>
                         );
@@ -1304,10 +1304,10 @@ function WeeklyTab() {
 
           {/* Abwesend Section */}
           <div>
-            <label className="text-[11px] font-medium text-gray-600 mb-1">
+            <label className="text-[10px] sm:text-[11px] font-medium text-gray-600 mb-1 block">
               Abwesend
             </label>
-            <div className="flex flex-wrap gap-1.5 bg-gray-50 border border-gray-200 rounded-sm p-2 min-h-[32px]">
+            <div className="flex flex-wrap gap-1 sm:gap-1.5 bg-gray-50 border border-gray-200 rounded p-1.5 sm:p-2 min-h-[28px] sm:min-h-[32px]">
               {Array.from(
                 new Map(
                   absences
@@ -1320,7 +1320,7 @@ function WeeklyTab() {
                 ).values()
               ).map((a) => {
                 let badgeClasses =
-                  "px-2 py-0.5 rounded-full text-[11px] font-medium border";
+                  "px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[11px] font-medium border";
                 if (a.type === "U")
                   badgeClasses +=
                     " bg-green-200 text-gray-800 border-green-200";
@@ -1349,7 +1349,7 @@ function WeeklyTab() {
                     .map((a) => [a.employee?._id, a])
                 ).values()
               ).length === 0 && (
-                <span className="text-gray-400 text-[11px] italic">
+                <span className="text-gray-400 text-[9px] sm:text-[11px] italic">
                   Keine Abwesenheiten
                 </span>
               )}
@@ -1357,6 +1357,7 @@ function WeeklyTab() {
           </div>
         </div>
       </div>
+
       {/* Loop over Früh / Spät / Nacht */}
       {SHIFTS.map(({ name, time }) => (
         <div

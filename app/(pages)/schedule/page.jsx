@@ -1663,7 +1663,7 @@ function UrlaubsplanungTab() {
   const [employees, setEmployees] = useState([]);
   const [activeCell, setActiveCell] = useState(null); // {empId, dateStr} or null
   const dropdownRef = useRef(null);
-
+  const [rangeStart, setRangeStart] = useState(null);
   // ✅ Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
@@ -1674,6 +1674,36 @@ function UrlaubsplanungTab() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  async function saveAbsenceRange(empId, startDate, endDate, type) {
+    const tasks = [];
+    let d = new Date(startDate);
+    while (d <= endDate) {
+      const dateStr = dayKey(d);
+      tasks.push(
+        fetch("/api/urlaub", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ employeeId: empId, date: dateStr, type }),
+        }).then((r) => r.json())
+      );
+      d.setDate(d.getDate() + 1);
+    }
+
+    const results = await Promise.all(tasks);
+
+    // Update local state
+    setItems((prev) => {
+      const without = prev.filter(
+        (x) =>
+          !(
+            x.employee?._id === empId &&
+            new Date(x.date) >= new Date(startDate) &&
+            new Date(x.date) <= new Date(endDate)
+          )
+      );
+      return [...without, ...results.filter((x) => !x.error)];
+    });
+  }
 
   async function saveAbsence(empId, dateStr, type) {
     const res = await fetch("/api/urlaub", {
@@ -1928,10 +1958,31 @@ function UrlaubsplanungTab() {
                           <td
                             key={dateStr}
                             className={`border border-gray-300 text-center p-0.5 relative ${cls}`}
-                            onClick={() =>
-                              !isHoliday &&
-                              setActiveCell({ empId: emp._id, dateStr })
-                            }
+                            onClick={(e) => {
+                              if (isHoliday) return;
+
+                              if (
+                                rangeStart &&
+                                rangeStart.empId === emp._id &&
+                                e.shiftKey
+                              ) {
+                                // SHIFT + click → fill range
+                                let start = new Date(rangeStart.dateStr);
+                                let end = new Date(dateStr);
+                                if (end < start) [start, end] = [end, start];
+                                saveAbsenceRange(
+                                  emp._id,
+                                  start,
+                                  end,
+                                  rangeStart.type
+                                );
+                                setRangeStart(null);
+                                setActiveCell(null);
+                              } else {
+                                // normal click → open dropdown
+                                setActiveCell({ empId: emp._id, dateStr });
+                              }
+                            }}
                             title={`${emp.name} - ${d.toLocaleDateString(
                               "de-DE"
                             )}`}
@@ -1960,6 +2011,15 @@ function UrlaubsplanungTab() {
                                               emp._id,
                                               dateStr,
                                               type
+                                            );
+                                            setRangeStart(
+                                              type
+                                                ? {
+                                                    empId: emp._id,
+                                                    dateStr,
+                                                    type,
+                                                  }
+                                                : null
                                             );
                                             setActiveCell(null);
                                           }}

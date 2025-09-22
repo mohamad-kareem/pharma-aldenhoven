@@ -47,7 +47,8 @@ export default function NavigationTabs() {
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-gray-900"
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              {/* 👇 Hidden on mobile, visible from sm breakpoint */}
+              <Icon className="hidden sm:inline w-3.5 h-3.5" />
               {tab.label}
             </Link>
           );

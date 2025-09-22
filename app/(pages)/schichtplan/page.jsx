@@ -833,7 +833,7 @@ export default function SchichtplanPage() {
         <NavigationTabs />
         <div className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto relative z-0 overflow-visible">
           {/* Header with print button */}
-          <div className="flex items-center justify-between mb-2 p-2 bg-white rounded-sm border border-gray-300">
+          <div className="flex items-center justify-between mb-2 p-2 bg-white/50 rounded-sm border border-gray-200">
             <h2 className="text-xs sm:text-lg font-bold text-gray-800 leading-tight">
               KW {week} / {year}
             </h2>
@@ -858,7 +858,7 @@ export default function SchichtplanPage() {
           </div>
 
           {/* Special Roles Section */}
-          <div className="mt-6 bg-white rounded-lg shadow border border-gray-200">
+          <div className="mt-3 mb-4 bg-white rounded-lg shadow border border-gray-200">
             <div className="p-3 space-y-4">
               {/* Rollen Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">

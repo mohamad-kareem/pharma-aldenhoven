@@ -518,17 +518,17 @@ export default function UrlaubsplanungPage() {
                               <td
                                 key={dateStr}
                                 data-cell={`${emp._id}-${dateStr}`}
-                                className={`border border-gray-300 text-center p-0.5 relative ${cls} ${
-                                  isActive
-                                    ? "ring-2 ring-blue-400"
-                                    : isHovered && !isDisabled
-                                    ? "ring-1 ring-blue-200"
-                                    : ""
-                                } ${
-                                  isDisabled
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                                }`}
+                                className={`border border-gray-300 text-center p-0.5 relative ${cls} 
+    ${
+      activeCell?.empId === emp._id && activeCell?.dateStr === dateStr
+        ? "ring-2 ring-blue-400" // active cell
+        : hoverCell?.empId === emp._id &&
+          hoverCell?.dateStr === dateStr &&
+          !isDisabled
+        ? "ring-1 ring-blue-200" // hovered cell
+        : ""
+    } 
+    ${isDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
                                 onClick={(e) => {
                                   if (isDisabled) return;
 
@@ -567,54 +567,58 @@ export default function UrlaubsplanungPage() {
                                   "de-DE"
                                 )}${isDisabled ? " (Nicht verfügbar)" : ""}`}
                               >
+                                {/* Cell content */}
                                 {ab?.type || (isHoliday ? "FT" : "")}
 
                                 {/* Dropdown */}
-                                {isActive && !isDisabled && (
-                                  <div
-                                    ref={dropdownRef}
-                                    data-dropdown
-                                    className="absolute z-30 mt-1 left-0 bg-white border border-gray-300 rounded shadow text-xs"
-                                  >
-                                    {["", "F", "S", "N", "U", "ZA", "K"].map(
-                                      (type) => {
-                                        const colorClass =
-                                          type && colors[type]
-                                            ? `${colors[type]} text-white`
-                                            : "text-gray-700";
-                                        return (
-                                          <div
-                                            key={type || "clear"}
-                                            className={`px-2 py-1 cursor-pointer hover:opacity-80 ${colorClass} border-b border-gray-200 last:border-b-0`}
-                                            onMouseDown={async () => {
-                                              await saveAbsence(
-                                                emp._id,
-                                                dateStr,
-                                                type || null
-                                              );
-                                              setRangeStart(
-                                                type
-                                                  ? {
-                                                      empId: emp._id,
-                                                      dateStr,
-                                                      type,
-                                                    }
-                                                  : {
-                                                      empId: emp._id,
-                                                      dateStr,
-                                                      type: null,
-                                                    }
-                                              );
-                                              setActiveCell(null);
-                                            }}
-                                          >
-                                            {type === "" ? "Clear" : type}
-                                          </div>
-                                        );
-                                      }
-                                    )}
-                                  </div>
-                                )}
+                                {activeCell?.empId === emp._id &&
+                                  activeCell?.dateStr === dateStr &&
+                                  !isDisabled && (
+                                    <div
+                                      ref={dropdownRef}
+                                      data-dropdown
+                                      className="absolute z-30 mt-1 left-0 bg-white border border-gray-300 rounded shadow text-xs pointer-events-auto"
+                                      style={{ minWidth: "10px" }}
+                                    >
+                                      {["", "F", "S", "N", "U", "ZA", "K"].map(
+                                        (type) => {
+                                          const colorClass =
+                                            type && colors[type]
+                                              ? `${colors[type]} text-white`
+                                              : "text-gray-700";
+                                          return (
+                                            <div
+                                              key={type || "clear"}
+                                              className={`px-2 py-1 cursor-pointer hover:opacity-80 ${colorClass} border-b border-gray-200 last:border-b-0`}
+                                              onMouseDown={async () => {
+                                                await saveAbsence(
+                                                  emp._id,
+                                                  dateStr,
+                                                  type || null
+                                                );
+                                                setRangeStart(
+                                                  type
+                                                    ? {
+                                                        empId: emp._id,
+                                                        dateStr,
+                                                        type,
+                                                      }
+                                                    : {
+                                                        empId: emp._id,
+                                                        dateStr,
+                                                        type: null,
+                                                      }
+                                                );
+                                                setActiveCell(null);
+                                              }}
+                                            >
+                                              {type === "" ? "Clear" : type}
+                                            </div>
+                                          );
+                                        }
+                                      )}
+                                    </div>
+                                  )}
                               </td>
                             );
                           })}

@@ -2,7 +2,13 @@
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { FiUser, FiHome, FiLogOut, FiSettings } from "react-icons/fi";
+import {
+  FiUser,
+  FiHome,
+  FiLogOut,
+  FiSettings,
+  FiChevronDown,
+} from "react-icons/fi";
 
 export default function UserDropdown() {
   const { data: session } = useSession();
@@ -35,63 +41,88 @@ export default function UserDropdown() {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Avatar Button */}
+      {/* Enhanced Avatar Button */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white text-sm font-medium shadow-sm hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        className="flex items-center gap-2 px-1 py-1  rounded-xl bg-gradient-to-r from-green-800 to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-3 focus:ring-green-400 focus:ring-opacity-50"
         aria-label="User menu"
       >
-        {getUserInitials()}
+        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm border border-green-300">
+          {getUserInitials()}
+        </div>
+        <FiChevronDown
+          className={`w-4 h-4 transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Modern Dropdown Menu */}
       <div
-        className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 text-sm transition-all z-50 ${
+        className={`absolute right-0 mt-1 w-42 bg-green-100 backdrop-blur-xl rounded-2xl shadow-2xl border border-green-300 py-2 text-sm transition-all duration-200 z-50 ${
           open
-            ? "opacity-100 visible translate-y-0"
-            : "opacity-0 invisible translate-y-1"
+            ? "opacity-100 visible translate-y-0 scale-100"
+            : "opacity-0 invisible -translate-y-2 scale-95"
         }`}
       >
-        {/* User Info */}
-
-        <div className="px-4 py-2 border-b border-gray-100 flex items-center gap-2">
-          <FiUser className="w-4 h-4 text-gray-500" />
-          <p className="font-medium text-gray-800 truncate text-xs">
-            {session.user?.name || "User"}
-          </p>
+        {/* Enhanced User Info */}
+        <div className="px-4 py-3 border-b border-green-300 flex items-center gap-3 bg-gradient-to-r from-green-50/50 to-emerald-50/30 rounded-t-xl">
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold text-sm shadow-md">
+            {getUserInitials()}
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-gray-800 truncate text-sm">
+              {session.user?.name || "User"}
+            </p>
+          </div>
         </div>
 
-        {/* Navigation Links */}
-        <div className="py-1">
+        {/* Enhanced Navigation Links */}
+        <div className="py-2 px-2">
           <Link
             href="/"
-            className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 text-xs"
+            className="flex items-center px-3 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group mx-1"
             onClick={() => setOpen(false)}
           >
-            <FiHome className="w-3.5 h-3.5 mr-2 text-gray-400" />
-            Home
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200 transition-colors mr-3">
+              <FiHome className="w-4 h-4" />
+            </div>
+            <span className="font-medium text-sm">Home</span>
           </Link>
+
           <Link
             href="/dashboard"
-            className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 text-xs"
+            className="flex items-center px-3 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group mx-1"
             onClick={() => setOpen(false)}
           >
-            <FiSettings className="w-3.5 h-3.5 mr-2 text-gray-400" />
-            Dashboard
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200 transition-colors mr-3">
+              <FiSettings className="w-4 h-4" />
+            </div>
+            <span className="font-medium text-sm">Dashboard</span>
           </Link>
         </div>
 
-        {/* Logout Button */}
-        <div className="border-t border-gray-100 pt-1">
+        {/* Enhanced Logout Button */}
+        <div className="border-t border-green-300 pt-2 px-2">
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50 text-xs"
+            className="flex items-center w-full px-3  rounded-xl text-red-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 group mx-1"
           >
-            <FiLogOut className="w-3.5 h-3.5 mr-2" />
-            Sign Out
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-700 group-hover:bg-red-200 transition-colors mr-3">
+              <FiLogOut className="w-4 h-4" />
+            </div>
+            <span className="font-medium text-sm">Sign Out</span>
           </button>
         </div>
       </div>
+
+      {/* Backdrop overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/5 z-40"
+          onClick={() => setOpen(false)}
+        />
+      )}
     </div>
   );
 }

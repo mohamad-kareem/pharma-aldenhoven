@@ -157,8 +157,6 @@ export default function Dashboard() {
             <p className="text-sm text-green-100">{todayStr}</p>
           </div>
         </div>
-        {/* Leaf background accents */}
-        <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-bl-[100%]"></div>
       </header>
 
       {/* Main Content */}

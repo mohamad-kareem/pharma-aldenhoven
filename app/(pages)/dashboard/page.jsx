@@ -133,7 +133,7 @@ export default function Dashboard() {
     },
     {
       title: "Schedules",
-      href: "/schedule?tab=weekly",
+      href: "/Mitarbeiter",
       description: "Manage schedules and employees",
       icon: <CalendarDays className="w-4 h-4" />,
     },

@@ -2,12 +2,13 @@
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FiUser,
+  FiChevronDown,
+  FiSettings,
   FiHome,
   FiLogOut,
-  FiSettings,
-  FiChevronDown,
 } from "react-icons/fi";
 
 export default function UserDropdown() {
@@ -15,10 +16,9 @@ export default function UserDropdown() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setOpen(false);
       }
     };
@@ -28,7 +28,6 @@ export default function UserDropdown() {
 
   if (!session) return null;
 
-  // Get user initials for avatar
   const getUserInitials = () => {
     if (!session.user?.name) return "U";
     return session.user.name
@@ -40,89 +39,76 @@ export default function UserDropdown() {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      {/* Enhanced Avatar Button */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-1 py-1  rounded-xl bg-gradient-to-r from-green-800 to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-3 focus:ring-green-400 focus:ring-opacity-50"
-        aria-label="User menu"
-      >
-        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm border border-green-300">
-          {getUserInitials()}
-        </div>
-        <FiChevronDown
-          className={`w-4 h-4 transition-transform duration-200 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {/* Modern Dropdown Menu */}
-      <div
-        className={`absolute right-0 mt-1 w-42 bg-green-100 backdrop-blur-xl rounded-2xl shadow-2xl border border-green-300 py-2 text-sm transition-all duration-200 z-50 ${
-          open
-            ? "opacity-100 visible translate-y-0 scale-100"
-            : "opacity-0 invisible -translate-y-2 scale-95"
-        }`}
-      >
-        {/* Enhanced User Info */}
-        <div className="px-4 py-3 border-b border-green-300 flex items-center gap-3 bg-gradient-to-r from-green-50/50 to-emerald-50/30 rounded-t-xl">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold text-sm shadow-md">
+    <div className="fixed top-3 right-4 z-[9999]" ref={dropdownRef}>
+      <div className="relative">
+        {/* Avatar Button */}
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2 p-0.5 rounded-full bg-gradient-to-br from-green-900 to-emerald-900 backdrop-blur-md border border-green-700 hover:border-green-400/50 shadow-lg hover:shadow-green-500/10 transition-all duration-300"
+        >
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-semibold ring-2 ring-green-900">
             {getUserInitials()}
           </div>
-          <div className="min-w-0">
-            <p className="font-semibold text-gray-800 truncate text-sm">
-              {session.user?.name || "User"}
-            </p>
-          </div>
-        </div>
+          <FiChevronDown
+            className={`w-4 h-4 text-gray-200 transition-transform duration-300 mr-1 ${
+              open ? "rotate-180" : ""
+            }`}
+          />
+        </motion.button>
 
-        {/* Enhanced Navigation Links */}
-        <div className="py-2 px-2">
-          <Link
-            href="/"
-            className="flex items-center px-3 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group mx-1"
-            onClick={() => setOpen(false)}
-          >
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200 transition-colors mr-3">
-              <FiHome className="w-4 h-4" />
-            </div>
-            <span className="font-medium text-sm">Home</span>
-          </Link>
+        {/* Dropdown */}
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute right-0 mt-1 w-35 sm:w-40 bg-gradient-to-br from-green-950 to-gray-950 backdrop-blur-xl shadow-xl rounded-xl py-2 z-50 border border-green-700/50 overflow-hidden"
+            >
+              {/* User info */}
+              <div className="px-4  border-b border-green-800 flex items-center gap-2">
+                <FiUser className="w-4 h-4 text-gray-400" />
+                <p className="text-base font-medium text-gray-400 truncate">
+                  {session.user?.name || "User"}
+                </p>
+              </div>
 
-          <Link
-            href="/dashboard"
-            className="flex items-center px-3 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group mx-1"
-            onClick={() => setOpen(false)}
-          >
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200 transition-colors mr-3">
-              <FiSettings className="w-4 h-4" />
-            </div>
-            <span className="font-medium text-sm">Dashboard</span>
-          </Link>
-        </div>
+              {/* Links */}
+              <div className="py-1.5">
+                <Link
+                  href="/dashboard"
+                  className="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-green-500/10 hover:text-green-400 transition-all duration-200 group"
+                  onClick={() => setOpen(false)}
+                >
+                  <FiSettings className="w-4 h-4 mr-3 text-gray-400 group-hover:text-green-400 transition-colors" />
+                  Dashboard
+                </Link>
+                <Link
+                  href="/"
+                  className="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-green-500/10 hover:text-green-400 transition-all duration-200 group"
+                  onClick={() => setOpen(false)}
+                >
+                  <FiHome className="w-4 h-4 mr-3 text-gray-400 group-hover:text-green-400 transition-colors" />
+                  Homepage
+                </Link>
+              </div>
 
-        {/* Enhanced Logout Button */}
-        <div className="border-t border-green-300 pt-2 px-2">
-          <button
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex items-center w-full px-3  rounded-xl text-red-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 group mx-1"
-          >
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-700 group-hover:bg-red-200 transition-colors mr-3">
-              <FiLogOut className="w-4 h-4" />
-            </div>
-            <span className="font-medium text-sm">Sign Out</span>
-          </button>
-        </div>
+              {/* Sign Out */}
+              <div className="px-4 py-1 border-t border-green-800">
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="flex items-center w-full px-1 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-md transition-all duration-200 group"
+                >
+                  <FiLogOut className="w-4 h-4 mr-3" />
+                  Sign Out
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-
-      {/* Backdrop overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/5 z-40"
-          onClick={() => setOpen(false)}
-        />
-      )}
     </div>
   );
 }

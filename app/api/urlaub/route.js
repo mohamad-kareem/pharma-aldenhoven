@@ -28,7 +28,7 @@ export async function POST(req) {
   const { employeeId, date, type } = await req.json(); // type in ["U","ZA","K","Feiertag"] or "NONE"
   const d = dayStartUTC(date);
   try {
-    if (type === "NONE") {
+    if (!type || type === "NONE") {
       await Absence.findOneAndDelete({ employee: employeeId, date: d });
       return NextResponse.json({ ok: true, removed: true });
     }

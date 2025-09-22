@@ -1966,7 +1966,6 @@ function UrlaubsplanungTab() {
                                 rangeStart.empId === emp._id &&
                                 e.shiftKey
                               ) {
-                                // SHIFT + click → fill range
                                 let start = new Date(rangeStart.dateStr);
                                 let end = new Date(dateStr);
                                 if (end < start) [start, end] = [end, start];
@@ -1975,7 +1974,7 @@ function UrlaubsplanungTab() {
                                   start,
                                   end,
                                   rangeStart.type
-                                );
+                                ); // works for filling AND clearing
                                 setRangeStart(null);
                                 setActiveCell(null);
                               } else {
@@ -2019,8 +2018,13 @@ function UrlaubsplanungTab() {
                                                     dateStr,
                                                     type,
                                                   }
-                                                : null
+                                                : {
+                                                    empId: emp._id,
+                                                    dateStr,
+                                                    type: null,
+                                                  } // mark clear as range action
                                             );
+
                                             setActiveCell(null);
                                           }}
                                         >

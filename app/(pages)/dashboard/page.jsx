@@ -50,6 +50,27 @@ export default function Dashboard() {
   const [employees, setEmployees] = useState([]);
   const [absences, setAbsences] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const ROLE_COLORS = {
+    "Vorarbeiter/in":
+      "bg-emerald-500/40 text-emerald-300 border-emerald-500/30",
+    QK: "bg-teal-500/40 text-teal-300 border-teal-500/30",
+    Bucher: "bg-lime-500/40 text-lime-300 border-lime-500/30",
+    "Zubr.Außen": "bg-green-500/40 text-green-300 border-green-500/30",
+    "Zubr.Reinraum": "bg-cyan-500/40 text-cyan-300 border-cyan-500/30",
+    Lager: "bg-yellow-500/40 text-yellow-300 border-yellow-500/30",
+    UmbautenTechnik: "bg-orange-500/40 text-orange-300 border-orange-500/30",
+    "Maschinen/Linienführer": "bg-red-500/40 text-red-300 border-red-500/30",
+    Linienführer: "bg-pink-500/40 text-pink-300 border-pink-500/30",
+    Maschinenführer: "bg-purple-500/40 text-purple-300 border-purple-500/30",
+    "Maschine/Linienbediner":
+      "bg-fuchsia-500/40 text-fuchsia-300 border-fuchsia-500/30",
+    "Maschine/Anlagenführer AZUBIS":
+      "bg-violet-500/40 text-violet-300 border-violet-500/30",
+    Packer: "bg-sky-500/40 text-sky-300 border-sky-500/30",
+    Teilzeitkraft: "bg-emerald-600/40 text-emerald-400 border-emerald-600/30",
+    Staplerfahrer: "bg-lime-500/40 text-lime-300 border-lime-500/30",
+    "Zubringer Reinraum": "bg-green-600/40 text-green-400 border-green-600/30",
+  };
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -152,9 +173,9 @@ export default function Dashboard() {
   ];
 
   const colorMap = {
-    emerald: "from-emerald-500 to-green-500",
-    teal: "from-teal-500 to-cyan-500",
-    lime: "from-lime-500 to-emerald-500",
+    emerald: "from-lime-500 to-emerald-500",
+    teal: "from-teal-500 to-cyan-700",
+    lime: "from-yellow-500 to-yellow-700",
   };
 
   return (
@@ -163,7 +184,7 @@ export default function Dashboard() {
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 bg-gradient-to-r from-emerald-950 to-gray-950 backdrop-blur-md border-b border-gray-800"
+        className="sticky top-0 z-50 bg-gradient-to-r from-green-950 to-gray-900 backdrop-blur-md border-b border-gray-800"
       >
         <div className="w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto px-4">
           <div className="flex justify-between items-center h-14">
@@ -231,7 +252,7 @@ export default function Dashboard() {
                     <p className="text-gray-400 text-xs flex-grow">
                       {card.description}
                     </p>
-                    <div className="mt-auto flex items-center text-xs text-gray-400 group-hover:text-gray-300">
+                    <div className="mt-auto flex items-center text-xs text-green-400 group-hover:text-gray-300">
                       Explore
                       <ChevronRight className="ml-1 h-3 w-3 group-hover:translate-x-1 transition-transform" />
                     </div>
@@ -245,8 +266,9 @@ export default function Dashboard() {
         {/* Team + Absence */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Team Distribution */}
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg border border-gray-700 p-4 shadow-md">
-            <div className="flex justify-between items-center mb-3">
+          {/* Team Distribution */}
+          <div className="bg-gradient-to-br from-gray-900 to-emerald-950 rounded-xl border border-gray-700 p-5 shadow-md">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="text-sm font-semibold text-white">
                 Team Distribution
               </h2>
@@ -255,25 +277,25 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="space-y-3">
-              {ROLE_ORDER.filter((r) => roleCounts[r] > 0).map((r) => (
-                <div key={r} className="flex items-center">
-                  <div className="w-40 text-xs text-gray-400 truncate">{r}</div>
-                  <div className="flex-1 mx-2">
-                    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-emerald-500 rounded-full"
-                        style={{
-                          width: `${
-                            ((roleCounts[r] || 0) /
-                              Math.max(1, employees.length)) *
-                            100
-                          }%`,
-                        }}
-                      ></div>
-                    </div>
+              {ROLE_ORDER.filter((r) => (roleCounts[r] || 0) > 0).map((r) => (
+                <div key={r}>
+                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                    <span>{r}</span>
+                    <span>{roleCounts[r]}</span>
                   </div>
-                  <div className="text-xs font-medium text-gray-300 w-6 text-right">
-                    {roleCounts[r] || 0}
+                  <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
+                    <div
+                      className={`h-2 rounded-full ${
+                        ROLE_COLORS[r]?.split(" ")[0] || "bg-emerald-500"
+                      }`}
+                      style={{
+                        width: `${
+                          ((roleCounts[r] || 0) /
+                            Math.max(1, employees.length)) *
+                          100
+                        }%`,
+                      }}
+                    />
                   </div>
                 </div>
               ))}

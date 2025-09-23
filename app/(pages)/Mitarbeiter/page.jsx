@@ -207,12 +207,12 @@ export default function EmployeesPage() {
               placeholder="Search team members..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full sm:w-80 px-3 py-2 text-sm rounded-lg bg-gradient-to-br from-gray-900 to-emerald-950 border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full sm:w-80 px-3 py-2 text-sm rounded-lg bg-gradient-to-br from-gray-900 to-emerald-950 border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-900 focus:border-emerald-900"
             />
 
             <button
               onClick={() => setIsAdding(true)}
-              className="flex items-center gap-2 px-2 py-2.5 rounded-lg bg-gradient-to-br from-gray-900 to-emerald-700 text-white text-xs font-medium hover:opacity-90 border border-emerald-600 shadow-md shadow-emerald-900/30 transition-all"
+              className="flex items-center gap-2 px-2 py-2.5 rounded-lg bg-gradient-to-br from-gray-900 to-emerald-700 text-white text-xs font-medium hover:opacity-90 border border-emerald-600 shadow-md shadow-emerald-900 transition-all "
             >
               <UserPlus className="w-4 h-4" />
               Add Member
@@ -240,16 +240,18 @@ export default function EmployeesPage() {
                   className="flex items-center justify-between px-4 py-3 hover:bg-gray-800/60 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-600/20 flex items-center justify-center text-emerald-400 font-bold">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-600/20 flex items-center justify-center text-emerald-400 font-bold">
                       {emp.name
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
                     </div>
                     <div>
-                      <p className="font-medium">{emp.name}</p>
+                      <p className="font-medium text-xs sm:text-base">
+                        {emp.name}
+                      </p>
                       <span
-                        className={`inline-block mt-0.5 px-2 py-0.5 text-[11px] rounded-full border ${
+                        className={`inline-block mt-0.5 px-2 py-0.5 text-[9px] sm:text-[11px]  rounded-full border ${
                           ROLE_COLORS[emp.role] ||
                           "bg-gray-700 text-gray-300 border-gray-600"
                         }`}

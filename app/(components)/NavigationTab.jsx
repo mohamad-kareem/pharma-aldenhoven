@@ -32,7 +32,7 @@ export default function NavigationTabs() {
 
   return (
     <div className="">
-      <div className="flex gap-1 overflow-x-auto p-1">
+      <div className="flex gap-1 overflow-hidden p-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = isActiveTab(tab.href);
@@ -41,7 +41,7 @@ export default function NavigationTabs() {
             <Link
               key={tab.key}
               href={tab.href}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all
+              className={`flex items-center gap-1 px-1 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all
                 ${
                   isActive
                     ? "bg-green-700 text-white shadow-sm"

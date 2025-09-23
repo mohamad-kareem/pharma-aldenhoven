@@ -401,10 +401,10 @@ export default function UrlaubsplanungPage() {
         >
           {/* Header */}
 
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div className="flex flex-row sm:flex-row justify-between sm:items-center gap-3 mb-4 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
             {/* Title + Help */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <h2 className="text-base sm:text-lg font-semibold text-gray-800">
+            <div className="flex flex-wrap items-center gap-0 sm:gap-2">
+              <h2 className="text-sm sm:text-base font-semibold text-gray-800">
                 Urlaubsplanung
               </h2>
 
@@ -413,10 +413,10 @@ export default function UrlaubsplanungPage() {
                 {/* Help Button */}
                 <button
                   onClick={() => setShowHelp(!showHelp)}
-                  className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition"
+                  className="p-1 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition"
                   title="Tastaturkürzel anzeigen"
                 >
-                  <HelpCircle size={18} />
+                  <HelpCircle className="w-4 h-4 sm:w-4 sm:h-4 mt-1" />
                 </button>
 
                 {/* Popover */}
@@ -512,13 +512,13 @@ export default function UrlaubsplanungPage() {
             </div>
 
             {/* Month Selector */}
-            <div className="flex items-center w-full sm:w-auto">
+            <div className="w-fit sm:w-auto">
               <input
                 id="month-select"
                 type="month"
                 value={ym}
                 onChange={(e) => setYm(e.target.value)}
-                className="w-full sm:w-auto px-2.5 sm:px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-fit sm:w-auto px-1 py-1 border border-gray-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>

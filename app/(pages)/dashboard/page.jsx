@@ -150,23 +150,23 @@ export default function Dashboard() {
   // Navigation cards
   const cards = [
     {
-      title: "Medicine",
+      title: "Produktion",
       href: "/medicine",
-      description: "Production lines management",
+      description: "Verwaltung der Produktionslinien",
       icon: <ClipboardList className="w-4 h-4" />,
       color: "emerald",
     },
     {
-      title: "Schedules",
+      title: "Dienstpläne",
       href: "/Mitarbeiter",
-      description: "Manage schedules and employees",
+      description: "Dienstpläne und Mitarbeiter verwalten",
       icon: <CalendarDays className="w-4 h-4" />,
       color: "teal",
     },
     {
       title: "+Admin",
       href: "/signup",
-      description: "Create new accounts",
+      description: "Neue Konten erstellen",
       icon: <UserPlus className="w-4 h-4" />,
       color: "lime",
     },
@@ -227,7 +227,7 @@ export default function Dashboard() {
                 whileTap={{ scale: 0.98 }}
                 className="relative group"
               >
-                <div className="relative h-full bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 overflow-hidden border border-gray-700 shadow-lg">
+                <div className="relative h-full bg-gradient-to-br from-gray-900 to-emerald-950 rounded-xl p-4 overflow-hidden border border-gray-700 shadow-lg">
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${
                       colorMap[card.color]
@@ -253,7 +253,7 @@ export default function Dashboard() {
                       {card.description}
                     </p>
                     <div className="mt-auto flex items-center text-xs text-green-400 group-hover:text-gray-300">
-                      Explore
+                      Entdecken
                       <ChevronRight className="ml-1 h-3 w-3 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
@@ -265,15 +265,13 @@ export default function Dashboard() {
 
         {/* Team + Absence */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Team Distribution */}
-          {/* Team Distribution */}
           <div className="bg-gradient-to-br from-gray-900 to-emerald-950 rounded-xl border border-gray-700 p-5 shadow-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-sm font-semibold text-white">
-                Team Distribution
+                Teamverteilung
               </h2>
               <span className="text-xs text-gray-400">
-                {employees.length} employees
+                {employees.length} Mitarbeiter
               </span>
             </div>
             <div className="space-y-3">
@@ -306,13 +304,13 @@ export default function Dashboard() {
           <div className="space-y-4">
             {[
               {
-                title: "On Vacation",
+                title: "Urlaub",
                 employees: urlaubEmployees,
                 color: "emerald",
                 icon: <Umbrella className="w-4 h-4 text-emerald-400" />,
               },
               {
-                title: "Sick Leave",
+                title: "Krankheit",
                 employees: krankEmployees,
                 color: "red",
                 icon: <Stethoscope className="w-4 h-4 text-red-400" />,
@@ -326,7 +324,7 @@ export default function Dashboard() {
             ].map((section, i) => (
               <div
                 key={i}
-                className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg border border-gray-700 p-4 shadow-md"
+                className="bg-gradient-to-br from-gray-900 to-emerald-950 rounded-lg border border-gray-700 p-4 shadow-md"
               >
                 <div className="flex items-center mb-3">
                   <div className="p-1.5 rounded bg-gray-700 mr-2">
@@ -335,7 +333,7 @@ export default function Dashboard() {
                   <h2 className="text-sm font-semibold text-white">
                     {section.title}
                   </h2>
-                  <span className="ml-auto bg-gray-700 text-gray-200 text-xs px-2 py-0.5 rounded-full">
+                  <span className="ml-auto bg-green-900 text-gray-200 text-xs px-2 py-0.5 rounded-full">
                     {section.employees.length}
                   </span>
                 </div>
@@ -353,7 +351,7 @@ export default function Dashboard() {
                   </ul>
                 ) : (
                   <p className="text-xs text-gray-500 py-2">
-                    No employees in this category today
+                    Heute keine Mitarbeiter in dieser Kategorie
                   </p>
                 )}
               </div>

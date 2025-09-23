@@ -29,11 +29,13 @@ export const authOptions = {
       },
     }),
   ],
-  pages: { signIn: "/signin" },
+  pages: {
+    signIn: "/signin",
+  },
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
 
-  // ✅ Make sure id, name, role persist in JWT and session
+  // ✅ Make sure id, name, role are always available in session
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

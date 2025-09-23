@@ -31,7 +31,7 @@ export default function NavigationTabs() {
     pathname === href || pathname.startsWith(href + "/");
 
   return (
-    <div className="bg-gray-50 border-b border-gray-200">
+    <div className="">
       <div className="flex gap-1 overflow-x-auto p-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -41,14 +41,14 @@ export default function NavigationTabs() {
             <Link
               key={tab.key}
               href={tab.href}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors ${
-                isActive
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-gray-900"
-              }`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all
+                ${
+                  isActive
+                    ? "bg-green-700 text-white shadow-sm"
+                    : "text-inherit hover:bg-black/10 hover:text-inherit"
+                }`}
             >
-              {/* 👇 Hidden on mobile, visible from sm breakpoint */}
-              <Icon className="hidden sm:inline w-3.5 h-3.5" />
+              <Icon className="hidden sm:inline w-3.5 h-3.5 opacity-80" />
               {tab.label}
             </Link>
           );

@@ -65,11 +65,11 @@ export default function UserDropdown() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="absolute right-0 mt-1 w-35 sm:w-40 bg-gradient-to-br from-green-950 to-gray-950 backdrop-blur-xl shadow-xl rounded-xl py-2 z-50 border border-green-700/50 overflow-hidden"
+              className="absolute right-0 mt-1 w-35 sm:w-45 bg-gradient-to-br from-green-950 to-gray-950 backdrop-blur-xl shadow-xl rounded-xl py-4 z-50 border border-green-700/50 overflow-hidden"
             >
               {/* User info */}
               <div className="px-4  border-b border-green-800 flex items-center gap-2">
-                <FiUser className="w-4 h-4 text-gray-400" />
+                <FiUser className="w-5 h-5 text-gray-400" />
                 <p className="text-base font-medium text-gray-400 truncate">
                   {session.user?.name || "User"}
                 </p>
@@ -99,7 +99,7 @@ export default function UserDropdown() {
               <div className="px-4 py-1 border-t border-green-800">
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
-                  className="flex items-center w-full px-1 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-md transition-all duration-200 group"
+                  className="flex items-center w-full px-1 mt-1 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-md transition-all duration-200 group"
                 >
                   <FiLogOut className="w-4 h-4 mr-3" />
                   Sign Out

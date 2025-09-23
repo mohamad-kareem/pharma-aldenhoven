@@ -44,7 +44,7 @@ export default function NavigationTabs() {
               className={`flex items-center gap-1 px-1 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all
                 ${
                   isActive
-                    ? "bg-green-700 text-white shadow-sm"
+                    ? "bg-gradient-to-br from-gray-900 to-emerald-700 border border-green-600 text-white shadow-sm"
                     : "text-inherit hover:bg-black/10 hover:text-inherit"
                 }`}
             >

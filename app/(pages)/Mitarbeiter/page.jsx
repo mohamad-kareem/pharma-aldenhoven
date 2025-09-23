@@ -201,24 +201,36 @@ export default function EmployeesPage() {
 
         {/* Top Section */}
         <div className="border-t-3 border-green-950 pb-3 mb-2">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 ">
+          <div className="flex flex-row items-center gap-2 pt-6 justify-start sm:justify-between">
+            {/* Search Input */}
             <input
               type="text"
               placeholder="Search team members..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full sm:w-80 px-3 py-2 text-sm rounded-lg bg-gradient-to-br from-gray-900 to-emerald-950 border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-900 focus:border-emerald-900"
+              className="w-full sm:w-80 px-2 py-1.5 text-xs rounded-md 
+                 bg-gradient-to-br from-gray-900 to-emerald-950 
+                 border border-gray-700 text-white 
+                 placeholder-gray-400 focus:ring-1 focus:ring-emerald-900 
+                 focus:border-emerald-900 sm:text-sm"
             />
 
+            {/* Add Button */}
             <button
               onClick={() => setIsAdding(true)}
-              className="flex items-center gap-2 px-2 py-2.5 rounded-lg bg-gradient-to-br from-gray-900 to-emerald-700 text-white text-xs font-medium hover:opacity-90 border border-emerald-600 shadow-md shadow-emerald-900 transition-all "
+              className="flex items-center gap-1 px-2 py-1.5 rounded-md 
+                 bg-gradient-to-br from-gray-900 to-emerald-700 
+                 text-white text-xs font-medium hover:opacity-90 
+                 border border-emerald-600 shadow-sm shadow-emerald-900 
+                 transition-all sm:px-3 sm:py-2 sm:text-sm"
             >
-              <UserPlus className="w-4 h-4" />
-              Add Member
+              <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="sm:hidden">Add</span>
+              <span className="hidden sm:inline">Add Member</span>
             </button>
           </div>
         </div>
+
         {/* Employee List */}
         <div className="bg-gradient-to-br from-gray-900 to-emerald-950 rounded-xl border border-gray-700 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-700 flex justify-between items-center">

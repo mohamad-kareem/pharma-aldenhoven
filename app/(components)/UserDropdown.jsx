@@ -39,7 +39,7 @@ export default function UserDropdown() {
   };
 
   return (
-    <div className="fixed top-3 right-4 z-[9999]" ref={dropdownRef}>
+    <div className="fixed top-2 right-4 z-[9999]" ref={dropdownRef}>
       <div className="relative">
         {/* Avatar Button */}
         <motion.button
@@ -47,7 +47,7 @@ export default function UserDropdown() {
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-2 p-0.5 rounded-full bg-gradient-to-br from-green-900 to-emerald-900 backdrop-blur-md border border-green-700 hover:border-green-400/50 shadow-lg hover:shadow-green-500/10 transition-all duration-300"
         >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-semibold ring-2 ring-green-900">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-semibold ring-2 ring-green-900">
             {getUserInitials()}
           </div>
           <FiChevronDown

@@ -149,12 +149,12 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-gray-100 to-green-200">
       {/* Header */}
       <header className="relative overflow-hidden bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-1  shadow-lg">
-        <div className="w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-6">
+        <div className="w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto flex flex-col sm:flex-row justify-between  gap-6">
           <div>
-            <h1 className="text-2xl md:text-2xl font-bold">
-              Welcome back, {firstName}
+            <h1 className="text-base md:text-2xl font-bold">
+              Willkommen, {firstName}
             </h1>
-            <p className="text-sm text-green-100">{todayStr}</p>
+            <p className="text-xs text-green-100">{todayStr}</p>
           </div>
         </div>
       </header>

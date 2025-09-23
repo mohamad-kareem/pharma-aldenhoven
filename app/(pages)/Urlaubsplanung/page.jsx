@@ -400,17 +400,20 @@ export default function UrlaubsplanungPage() {
           className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto"
         >
           {/* Header */}
-          {/* Compact Professional Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-            <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-gray-800">
+
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+            {/* Title + Help */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-800">
                 Urlaubsplanung
               </h2>
+
+              {/* Help Section */}
               <div className="relative" ref={helpRef}>
                 {/* Help Button */}
                 <button
                   onClick={() => setShowHelp(!showHelp)}
-                  className="p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition"
+                  className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition"
                   title="Tastaturkürzel anzeigen"
                 >
                   <HelpCircle size={18} />
@@ -418,19 +421,29 @@ export default function UrlaubsplanungPage() {
 
                 {/* Popover */}
                 {showHelp && (
-                  <div className="absolute left-1 top-5 mt-2 w-80 max-w-sm bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-4 animate-fadeIn">
+                  <div
+                    className="
+            absolute 
+            top-10 sm:top-8
+            left-1/2 sm:left-0
+            -translate-x-1/2 sm:translate-x-0
+            w-72 sm:w-80
+            bg-white border border-gray-200 rounded-xl shadow-xl z-50 
+            p-3 sm:p-4 animate-fadeIn
+          "
+                  >
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold text-gray-900">
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <h3 className="text-xs sm:text-sm font-semibold text-gray-900">
                         Tastaturkürzel
                       </h3>
                     </div>
 
                     {/* Shortcuts */}
-                    <ul className="space-y-2 text-sm text-gray-700">
+                    <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700">
                       <li className="flex items-center justify-between">
                         <span className="text-gray-600">Eintrag löschen</span>
-                        <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                        <kbd className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded bg-gray-100 text-[10px] sm:text-xs font-mono shadow-sm">
                           C
                         </kbd>
                       </li>
@@ -438,7 +451,7 @@ export default function UrlaubsplanungPage() {
                         <span className="text-gray-600">
                           Schließen / Auswahl aufheben
                         </span>
-                        <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                        <kbd className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded bg-gray-100 text-[10px] sm:text-xs font-mono shadow-sm">
                           Esc
                         </kbd>
                       </li>
@@ -446,17 +459,17 @@ export default function UrlaubsplanungPage() {
                         <span className="text-gray-600">
                           Auswahl bestätigen
                         </span>
-                        <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                        <kbd className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded bg-gray-100 text-[10px] sm:text-xs font-mono shadow-sm">
                           Enter
                         </kbd>
                       </li>
                       <li className="flex items-center justify-between">
                         <span className="text-gray-600">Navigation</span>
-                        <span className="flex gap-1">
+                        <span className="flex gap-0.5 sm:gap-1">
                           {["↑", "↓", "←", "→"].map((k) => (
                             <kbd
                               key={k}
-                              className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm"
+                              className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded bg-gray-100 text-[10px] sm:text-xs font-mono shadow-sm"
                             >
                               {k}
                             </kbd>
@@ -467,11 +480,11 @@ export default function UrlaubsplanungPage() {
                         <span className="text-gray-600">
                           Monatsanfang / -ende
                         </span>
-                        <span className="flex gap-1">
+                        <span className="flex gap-0.5 sm:gap-1">
                           {["Home", "End"].map((k) => (
                             <kbd
                               key={k}
-                              className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm"
+                              className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded bg-gray-100 text-[10px] sm:text-xs font-mono shadow-sm"
                             >
                               {k}
                             </kbd>
@@ -480,12 +493,14 @@ export default function UrlaubsplanungPage() {
                       </li>
                       <li className="flex items-center justify-between">
                         <span className="text-gray-600">Mehrfachauswahl</span>
-                        <span className="flex gap-1 items-center">
-                          <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                        <span className="flex gap-0.5 sm:gap-1 items-center">
+                          <kbd className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded bg-gray-100 text-[10px] sm:text-xs font-mono shadow-sm">
                             Shift
                           </kbd>
-                          <span className="text-gray-400 text-xs">+</span>
-                          <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                          <span className="text-gray-400 text-[10px] sm:text-xs">
+                            +
+                          </span>
+                          <kbd className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded bg-gray-100 text-[10px] sm:text-xs font-mono shadow-sm">
                             Klick
                           </kbd>
                         </span>
@@ -497,13 +512,13 @@ export default function UrlaubsplanungPage() {
             </div>
 
             {/* Month Selector */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center w-full sm:w-auto">
               <input
                 id="month-select"
                 type="month"
                 value={ym}
                 onChange={(e) => setYm(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-2.5 sm:px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>

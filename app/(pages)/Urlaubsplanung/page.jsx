@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import React from "react";
 import NavigationTabs from "@/app/(components)/NavigationTab";
-
+import { HelpCircle } from "lucide-react";
 // ---------- Helper Functions ----------
 const dayKey = (d) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
@@ -63,7 +63,8 @@ export default function UrlaubsplanungPage() {
   const [hoverCell, setHoverCell] = useState(null); // { empId, dateStr }
   const dropdownRef = useRef(null);
   const tableWrapperRef = useRef(null);
-
+  const [showHelp, setShowHelp] = useState(false);
+  const helpRef = useRef(null);
   const [ym, setYm] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -91,6 +92,21 @@ export default function UrlaubsplanungPage() {
       }
     })();
   }, [ym]);
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!helpRef.current) return;
+      if (!helpRef.current.contains(e.target)) setShowHelp(false);
+    };
+    const onEsc = (e) => {
+      if (e.key === "Escape") setShowHelp(false);
+    };
+    document.addEventListener("click", onDocClick);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, []);
 
   // ---------- Date Calculations ----------
   const [y, m] = ym.split("-").map(Number);
@@ -384,14 +400,110 @@ export default function UrlaubsplanungPage() {
           className="p-2 bg-gray-50 min-h-screen w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto"
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-3 p-2 bg-white rounded-sm border border-gray-300">
-            <h2 className="text-xl font-bold text-gray-800">Urlaubsplanung</h2>
-            <div className="flex items-center gap-1 bg-green-50 p-1 rounded-sm">
+          {/* Compact Professional Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Urlaubsplanung
+              </h2>
+              <div className="relative" ref={helpRef}>
+                {/* Help Button */}
+                <button
+                  onClick={() => setShowHelp(!showHelp)}
+                  className="p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition"
+                  title="Tastaturkürzel anzeigen"
+                >
+                  <HelpCircle size={18} />
+                </button>
+
+                {/* Popover */}
+                {showHelp && (
+                  <div className="absolute left-1 top-5 mt-2 w-80 max-w-sm bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-4 animate-fadeIn">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-gray-900">
+                        Tastaturkürzel
+                      </h3>
+                    </div>
+
+                    {/* Shortcuts */}
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      <li className="flex items-center justify-between">
+                        <span className="text-gray-600">Eintrag löschen</span>
+                        <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                          C
+                        </kbd>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span className="text-gray-600">
+                          Schließen / Auswahl aufheben
+                        </span>
+                        <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                          Esc
+                        </kbd>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span className="text-gray-600">
+                          Auswahl bestätigen
+                        </span>
+                        <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                          Enter
+                        </kbd>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span className="text-gray-600">Navigation</span>
+                        <span className="flex gap-1">
+                          {["↑", "↓", "←", "→"].map((k) => (
+                            <kbd
+                              key={k}
+                              className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm"
+                            >
+                              {k}
+                            </kbd>
+                          ))}
+                        </span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span className="text-gray-600">
+                          Monatsanfang / -ende
+                        </span>
+                        <span className="flex gap-1">
+                          {["Home", "End"].map((k) => (
+                            <kbd
+                              key={k}
+                              className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm"
+                            >
+                              {k}
+                            </kbd>
+                          ))}
+                        </span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span className="text-gray-600">Mehrfachauswahl</span>
+                        <span className="flex gap-1 items-center">
+                          <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                            Shift
+                          </kbd>
+                          <span className="text-gray-400 text-xs">+</span>
+                          <kbd className="px-2 py-1 rounded bg-gray-100 text-xs font-mono shadow-sm">
+                            Klick
+                          </kbd>
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Month Selector */}
+            <div className="flex items-center gap-2">
               <input
+                id="month-select"
                 type="month"
                 value={ym}
                 onChange={(e) => setYm(e.target.value)}
-                className="border border-gray-300 rounded-sm p-1 text-xs focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>

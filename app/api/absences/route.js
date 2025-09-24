@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import Absence from "@/models/Absence";
 import { connectDB } from "@/lib/mongoose";
-
+import Employee from "@/models/Employee";
 export async function GET() {
   await connectDB();
   const absences = await Absence.find().populate("employee").lean();

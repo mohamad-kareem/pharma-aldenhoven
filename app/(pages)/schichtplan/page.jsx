@@ -977,7 +977,7 @@ export default function SchichtplanPage() {
               className="mb-4 bg-white rounded-sm border border-gray-300 overflow-hidden"
             >
               {/* Shift header */}
-              <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-green-700 to-green-800 text-white">
+              <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-green-600 to-green-800 text-white">
                 <div className="flex items-center gap-1">
                   <div className="px-1 py-0.5 bg-green-900 text-white font-semibold text-xs">
                     {name}

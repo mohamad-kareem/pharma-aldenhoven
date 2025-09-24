@@ -5,6 +5,12 @@ import Absence from "@/models/Absence";
 import Employee from "@/models/Employee";
 import { connectDB } from "@/lib/mongoose";
 
+function dayStartUTC(d) {
+  const x = new Date(d);
+  x.setUTCHours(0, 0, 0, 0);
+  return x;
+}
+
 export async function GET() {
   await connectDB();
   const schedule = await WeeklySchedule.find().populate("employee").lean();
@@ -26,15 +32,26 @@ export async function POST(req) {
       });
     }
 
-    // Krank check
+    const d = dayStartUTC(day);
+
+    // Absence block: K, U, ZA, Feiertag
     const absence = await Absence.findOne({
       employee: employee._id,
-      date: day,
-      type: "K",
+      date: d,
+      type: { $in: ["K", "U", "ZA", "Feiertag"] },
     });
+
     if (absence) {
+      const labels = {
+        K: "krank",
+        U: "im Urlaub",
+        ZA: "im Zeitausgleich",
+        Feiertag: "Feiertag",
+      };
       return NextResponse.json(
-        { error: `${employee.name} is sick on this day` },
+        {
+          error: `${employee.name} ist ${labels[absence.type]} an diesem Tag.`,
+        },
         { status: 400 }
       );
     }
@@ -56,7 +73,7 @@ export async function POST(req) {
     const assignment = await WeeklySchedule.create({
       week,
       year,
-      day,
+      day: d,
       shift,
       line,
       position,

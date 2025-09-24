@@ -64,15 +64,24 @@ export async function POST(req) {
       );
     }
 
-    // Krank block
-    const krank = await Absence.findOne({
+    // Absence block: K, U, ZA, Feiertag
+    const absence = await Absence.findOne({
       employee: employeeId,
       date: d,
-      type: "K",
+      type: { $in: ["K", "U", "ZA", "Feiertag"] },
     });
-    if (krank) {
+
+    if (absence) {
+      const labels = {
+        K: "krank",
+        U: "im Urlaub",
+        ZA: "im Zeitausgleich",
+        Feiertag: "Feiertag",
+      };
       return NextResponse.json(
-        { error: `${employee.name} ist krank an diesem Tag.` },
+        {
+          error: `${employee.name} ist ${labels[absence.type]} an diesem Tag.`,
+        },
         { status: 400 }
       );
     }

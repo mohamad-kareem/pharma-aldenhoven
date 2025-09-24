@@ -42,8 +42,14 @@ const LINES = [
 /* ---------- helpers ---------- */
 function dayStart(dateStr) {
   const d = new Date(dateStr);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().slice(0, 10);
+  d.setHours(0, 0, 0, 0); // reset time locally
+
+  // Build YYYY-MM-DD from local values
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function isoWeek(d) {
@@ -66,6 +72,7 @@ const Dropdown = React.memo(function Dropdown({
   assign,
   activeDropdown,
   setActiveDropdown,
+  absentToday,
 }) {
   const triggerRef = React.useRef(null);
   const menuRef = React.useRef(null);
@@ -212,20 +219,32 @@ const Dropdown = React.memo(function Dropdown({
             </div>
 
             {/* Employees */}
-            {filtered.map((emp, idx) => (
-              <div
-                key={emp._id}
-                className={`p-1 text-xs truncate ${
-                  idx === highlightIndex ? "bg-green-100" : ""
-                } hover:bg-green-50 cursor-pointer`}
-                onClick={() => {
-                  assign({ shift, line, position, employeeId: emp._id });
-                  closeMenu();
-                }}
-              >
-                {emp.name}
-              </div>
-            ))}
+            {filtered.map((emp, idx) => {
+              // Check if employee is absent on this date
+              const type = absentToday.get(emp._id);
+              const isAbsent = Boolean(type);
+
+              return (
+                <div
+                  key={emp._id}
+                  className={`p-1 text-xs truncate ${
+                    idx === highlightIndex ? "bg-green-100" : ""
+                  } ${
+                    isAbsent
+                      ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                      : "hover:bg-green-50 cursor-pointer"
+                  }`}
+                  onClick={() => {
+                    if (isAbsent) return; // 🚫 block assignment
+                    assign({ shift, line, position, employeeId: emp._id });
+                    closeMenu();
+                  }}
+                  title={isAbsent ? "Abwesend (Urlaub/Krank/ZA)" : ""}
+                >
+                  {emp.name} {isAbsent ? "❌" : ""}
+                </div>
+              );
+            })}
 
             {/* Free text */}
             {filter && (
@@ -303,7 +322,7 @@ export default function SchichtplanPage() {
   }, [date]);
 
   useEffect(() => {
-    fetch(`/api/urlaub?ym=${date.slice(0, 7)}`)
+    fetch(`/api/absences?ym=${date.slice(0, 7)}`)
       .then((r) => r.json())
       .then(setAbsences);
   }, [date]);
@@ -316,6 +335,16 @@ export default function SchichtplanPage() {
       }, {}),
     [employees]
   );
+  const absentToday = useMemo(() => {
+    const map = new Map(); // id -> type
+    absences.forEach((a) => {
+      const isSameDay = new Date(a.date).toISOString().slice(0, 10) === date;
+      if (isSameDay && ["U", "K", "ZA"].includes(a.type)) {
+        map.set(a.employee?._id, a.type);
+      }
+    });
+    return map;
+  }, [absences, date]);
 
   async function assign({
     shift,
@@ -902,6 +931,7 @@ export default function SchichtplanPage() {
                                 assign={assign}
                                 activeDropdown={activeDropdown}
                                 setActiveDropdown={setActiveDropdown}
+                                absentToday={absentToday}
                                 placeholder="Mitarbeiter…"
                                 className="w-full border-none outline-none bg-transparent text-gray-700 text-[9px] sm:text-[11px] truncate"
                               />
@@ -1037,6 +1067,7 @@ export default function SchichtplanPage() {
                                   assign={assign}
                                   activeDropdown={activeDropdown}
                                   setActiveDropdown={setActiveDropdown}
+                                  absentToday={absentToday}
                                 />
                               </td>
                             </tr>
@@ -1101,6 +1132,7 @@ export default function SchichtplanPage() {
                                   assign={assign}
                                   activeDropdown={activeDropdown}
                                   setActiveDropdown={setActiveDropdown}
+                                  absentToday={absentToday}
                                 />
                               </td>
                             );
@@ -1142,6 +1174,7 @@ export default function SchichtplanPage() {
                                   assign={assign}
                                   activeDropdown={activeDropdown}
                                   setActiveDropdown={setActiveDropdown}
+                                  absentToday={absentToday}
                                 />
                               </td>
                             );

@@ -228,7 +228,7 @@ const Dropdown = React.memo(function Dropdown({
                 <div
                   key={emp._id}
                   className={`p-1 text-xs truncate ${
-                    idx === highlightIndex ? "bg-green-100" : ""
+                    idx === highlightIndex && !isAbsent ? "bg-green-100" : ""
                   } ${
                     isAbsent
                       ? "text-gray-400 bg-gray-100 cursor-not-allowed"
@@ -239,9 +239,32 @@ const Dropdown = React.memo(function Dropdown({
                     assign({ shift, line, position, employeeId: emp._id });
                     closeMenu();
                   }}
-                  title={isAbsent ? "Abwesend (Urlaub/Krank/ZA)" : ""}
+                  title={
+                    isAbsent
+                      ? type === "U"
+                        ? "Urlaub"
+                        : type === "K"
+                        ? "Krank"
+                        : type === "ZA"
+                        ? "Zeitausgleich"
+                        : "Abwesend"
+                      : ""
+                  }
                 >
-                  {emp.name} {isAbsent ? "❌" : ""}
+                  {emp.name}
+                  {isAbsent && (
+                    <span
+                      className={`ml-2 inline-block w-2 h-2 rounded-full  ${
+                        type === "U"
+                          ? "bg-green-400"
+                          : type === "K"
+                          ? "bg-red-400"
+                          : type === "ZA"
+                          ? "bg-yellow-400"
+                          : "bg-gray-400"
+                      }`}
+                    />
+                  )}
                 </div>
               );
             })}

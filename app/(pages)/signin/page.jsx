@@ -96,7 +96,7 @@ export default function SignInPage() {
             </label>
             <input
               type="text"
-              placeholder="Geben Sie Ihren Benutzernamen ein"
+              placeholder="Benutzername"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition shadow-sm placeholder-gray-500"
@@ -111,7 +111,7 @@ export default function SignInPage() {
             </label>
             <input
               type="password"
-              placeholder="Geben Sie Ihr Passwort ein"
+              placeholder="Passwort"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition shadow-sm placeholder-gray-500"

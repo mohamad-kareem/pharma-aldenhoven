@@ -114,7 +114,7 @@ export default function SignUpPage() {
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Geben Sie einen eindeutigen Namen ein"
+              placeholder="Eindeutigen Namen angeben"
               className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 transition"
               required
               disabled={loading}
@@ -129,7 +129,7 @@ export default function SignUpPage() {
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="Geben Sie Ihre E-Mail-Adresse ein"
+              placeholder="Benutzer-E-Mail"
               className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 transition"
               required
               disabled={loading}
@@ -144,7 +144,7 @@ export default function SignUpPage() {
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="Erstellen Sie ein sicheres Passwort"
+              placeholder="Sicheres Passwort erstellen"
               className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 transition"
               required
               disabled={loading}

@@ -203,7 +203,7 @@ const Dropdown = React.memo(function Dropdown({
 
             {/* Clear */}
             <div
-              className="p-1 text-xs hover:bg-gray-100 cursor-pointer"
+              className="p-1 text-xs text-red-600 hover:bg-gray-100 cursor-pointer"
               onClick={() => {
                 assign({
                   shift,
@@ -228,7 +228,7 @@ const Dropdown = React.memo(function Dropdown({
                 <div
                   key={emp._id}
                   className={`p-1 text-xs truncate ${
-                    idx === highlightIndex && !isAbsent ? "bg-green-100" : ""
+                    idx === highlightIndex && !isAbsent ? "bg-green-10" : ""
                   } ${
                     isAbsent
                       ? "text-gray-400 bg-gray-100 cursor-not-allowed"

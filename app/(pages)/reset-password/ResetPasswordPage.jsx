@@ -15,6 +15,13 @@ export default function ResetPasswordPage({ token }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // 🔒 Password validation
+  function validatePassword(password) {
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
@@ -22,6 +29,13 @@ export default function ResetPasswordPage({ token }) {
 
     if (password !== confirm) {
       setError("Passwörter stimmen nicht überein");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError(
+        "Passwort muss mindestens 8 Zeichen haben und Großbuchstaben, Kleinbuchstaben, eine Zahl und ein Sonderzeichen enthalten."
+      );
       return;
     }
 
@@ -34,8 +48,9 @@ export default function ResetPasswordPage({ token }) {
       });
 
       const data = await res.json();
-      if (!res.ok) setError(data.error);
-      else {
+      if (!res.ok) {
+        setError(data.error);
+      } else {
         setMessage(data.message);
         setTimeout(() => router.push("/signin"), 2000);
       }
@@ -62,18 +77,18 @@ export default function ResetPasswordPage({ token }) {
         </Link>
       </div>
 
-      {/* Background glow effects matching dashboard */}
+      {/* Background glow */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-60 h-60 bg-emerald-500/10 rounded-full blur-2xl"></div>
         <div className="absolute bottom-0 right-1/4 w-60 h-60 bg-teal-400/10 rounded-full blur-2xl"></div>
       </div>
 
       {/* Animated background blobs */}
-      <div className="absolute -top-32 -left-32 w-72 h-72 bg-emerald-500/10 rounded-full mix-blend-screen filter blur-2xl opacity-30 animate-blob"></div>
-      <div className="absolute top-1/2 -right-32 w-72 h-72 bg-teal-400/10 rounded-full mix-blend-screen filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
-      <div className="absolute -bottom-32 left-1/2 w-72 h-72 bg-green-500/10 rounded-full mix-blend-screen filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
+      <div className="absolute -top-32 -left-32 w-72 h-72 bg-emerald-500/10 rounded-full blur-2xl opacity-30 animate-blob"></div>
+      <div className="absolute top-1/2 -right-32 w-72 h-72 bg-teal-400/10 rounded-full blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
+      <div className="absolute -bottom-32 left-1/2 w-72 h-72 bg-green-500/10 rounded-full blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
 
-      {/* Card - matching dashboard design */}
+      {/* Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -94,7 +109,7 @@ export default function ResetPasswordPage({ token }) {
           </p>
         </div>
 
-        {/* Error and Success Messages */}
+        {/* Error / Success */}
         {error && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -114,6 +129,7 @@ export default function ResetPasswordPage({ token }) {
           </motion.div>
         )}
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -122,12 +138,18 @@ export default function ResetPasswordPage({ token }) {
             <input
               type="password"
               placeholder="Geben Sie Ihr neues Passwort ein"
-              className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition shadow-sm placeholder-gray-500"
+              className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
             />
+            {password && !validatePassword(password) && (
+              <p className="mt-1 text-xs text-red-400">
+                Mindestens 8 Zeichen, inkl. Groß- & Kleinbuchstaben, Zahl &
+                Sonderzeichen.
+              </p>
+            )}
           </div>
 
           <div>
@@ -137,7 +159,7 @@ export default function ResetPasswordPage({ token }) {
             <input
               type="password"
               placeholder="Bestätigen Sie Ihr neues Passwort"
-              className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition shadow-sm placeholder-gray-500"
+              className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               required
@@ -150,7 +172,7 @@ export default function ResetPasswordPage({ token }) {
             disabled={loading}
             whileHover={!loading ? { scale: 1.02 } : {}}
             whileTap={!loading ? { scale: 0.98 } : {}}
-            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 disabled:from-emerald-800 disabled:to-green-800 text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 disabled:opacity-60 text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 rounded-lg shadow-lg flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -166,14 +188,14 @@ export default function ResetPasswordPage({ token }) {
         <div className="mt-5 text-center">
           <Link
             href="/signin"
-            className="text-xs sm:text-sm text-emerald-400 font-medium hover:text-emerald-300 transition-colors hover:underline"
+            className="text-xs sm:text-sm text-emerald-400 font-medium hover:text-emerald-300 underline"
           >
             Zurück zur Anmeldung
           </Link>
         </div>
       </motion.div>
 
-      {/* Tailwind keyframes for animated blobs */}
+      {/* Blob animation */}
       <style jsx>{`
         .animate-blob {
           animation: blob 8s infinite;

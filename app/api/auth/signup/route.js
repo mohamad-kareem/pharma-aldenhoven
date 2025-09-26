@@ -17,7 +17,7 @@ export async function POST(req) {
       );
     }
 
-    // check if email exists (optional)
+    // check if email exists
     if (email) {
       const existingEmail = await User.findOne({ email });
       if (existingEmail) {
@@ -26,6 +26,19 @@ export async function POST(req) {
           { status: 400 }
         );
       }
+    }
+
+    // 🔒 enforce password policy
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return NextResponse.json(
+        {
+          error:
+            "Password must be at least 8 characters long, include uppercase, lowercase, a number and a special character.",
+        },
+        { status: 400 }
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

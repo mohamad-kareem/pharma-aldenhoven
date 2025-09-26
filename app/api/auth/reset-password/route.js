@@ -8,9 +8,23 @@ export async function POST(req) {
     const { token, password } = await req.json();
     await connectDB();
 
+    // 🔒 Password validation
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return NextResponse.json(
+        {
+          error:
+            "Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate token and expiry
     const user = await User.findOne({
       resetToken: token,
-      resetTokenExpiry: { $gt: Date.now() }, // must still be valid
+      resetTokenExpiry: { $gt: Date.now() },
     });
 
     if (!user) {
@@ -20,6 +34,7 @@ export async function POST(req) {
       );
     }
 
+    // Hash and save new password
     const hashedPassword = await bcrypt.hash(password, 10);
     user.password = hashedPassword;
     user.resetToken = undefined;

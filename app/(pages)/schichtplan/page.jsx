@@ -215,7 +215,7 @@ const Dropdown = React.memo(function Dropdown({
                 closeMenu();
               }}
             >
-              -- Clear --
+              -- Löschen --
             </div>
 
             {/* Employees */}

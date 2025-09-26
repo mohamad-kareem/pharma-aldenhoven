@@ -188,7 +188,7 @@ export default function EmployeesPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-950 to-emerald-950 flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="animate-spin h-10 w-10 border-2 border-emerald-500 border-t-transparent rounded-full mb-4" />
-          <p className="text-sm text-gray-300">Loading employees...</p>
+          <p className="text-sm text-gray-300">Mitarbeiter werden geladen...</p>
         </div>
       </div>
     );
@@ -205,7 +205,7 @@ export default function EmployeesPage() {
             {/* Search Input */}
             <input
               type="text"
-              placeholder="Search team members..."
+              placeholder="Teammitglieder suchen..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full sm:w-80 px-2 py-1.5 text-xs rounded-md 
@@ -225,8 +225,8 @@ export default function EmployeesPage() {
                  transition-all sm:px-3 sm:py-2 sm:text-sm"
             >
               <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="sm:hidden">Add</span>
-              <span className="hidden sm:inline">Add Member</span>
+              <span className="sm:hidden">Hinzufügen</span>
+              <span className="hidden sm:inline">Mitglied hinzufügen</span>
             </button>
           </div>
         </div>
@@ -235,15 +235,16 @@ export default function EmployeesPage() {
         <div className="bg-gradient-to-br from-gray-900 to-emerald-950 rounded-xl border border-gray-700 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-700 flex justify-between items-center">
             <div>
-              <h2 className="text-sm font-semibold">Team Members</h2>
+              <h2 className="text-sm font-semibold">Teammitglieder</h2>
               <p className="text-xs text-gray-400">
-                {filteredEmployees.length} of {employees.length} shown
+                {filteredEmployees.length} von {employees.length} angezeigt
               </p>
             </div>
             <span className="text-xs text-gray-400">
-              Page {currentPage} of {totalPages}
+              Seite {currentPage} von {totalPages}
             </span>
           </div>
+
           {paginatedEmployees.length > 0 ? (
             <div className="divide-y divide-gray-800">
               {paginatedEmployees.map((emp) => (
@@ -291,7 +292,7 @@ export default function EmployeesPage() {
             </div>
           ) : (
             <div className="px-4 py-8 text-center text-gray-400 text-sm">
-              No employees found
+              Keine Mitarbeiter gefunden
             </div>
           )}
         </div>
@@ -304,7 +305,7 @@ export default function EmployeesPage() {
               disabled={currentPage === 1}
               className="px-3 py-1 text-sm rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40"
             >
-              Prev
+              Zurück
             </button>
             {[...Array(totalPages)].map((_, idx) => {
               const page = idx + 1;
@@ -327,14 +328,15 @@ export default function EmployeesPage() {
               disabled={currentPage === totalPages}
               className="px-3 py-1 text-sm rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40"
             >
-              Next
+              Weiter
             </button>
           </div>
         )}
 
         {/* Role Distribution */}
         <div className="bg-gradient-to-br from-gray-950 to-emerald-950 rounded-xl border border-gray-700 p-5 mt-6">
-          <h3 className="text-sm font-semibold mb-4">Role Distribution</h3>
+          <h3 className="text-sm font-semibold mb-4">Rollenverteilung</h3>
+
           <div className="space-y-3">
             {ROLE_ORDER.filter((r) => (roleCounts[r] || 0) > 0).map((r) => (
               <div key={r}>
@@ -365,12 +367,14 @@ export default function EmployeesPage() {
       {isAdding && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md bg-gradient-to-br from-gray-950 to-emerald-950 border border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-semibold mb-4">Add Employee</h3>
+            <h3 className="text-sm font-semibold mb-4">
+              Mitarbeiter hinzufügen
+            </h3>
             <form onSubmit={addEmployee} className="space-y-3">
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Full name"
+                placeholder="Vollständiger Name"
                 className="w-full px-3 py-2.5 text-sm rounded-lg bg-gray-800 border border-gray-700 text-white"
               />
               <select
@@ -378,7 +382,8 @@ export default function EmployeesPage() {
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full px-3 py-2.5 text-sm rounded-lg bg-gray-800 border border-gray-700 text-white"
               >
-                <option value="">Select role</option>
+                <option value="">Rolle auswählen</option>
+
                 {ROLE_ORDER.map((r) => (
                   <option key={r} value={r}>
                     {r}
@@ -391,14 +396,14 @@ export default function EmployeesPage() {
                   onClick={() => setIsAdding(false)}
                   className="px-4 py-2 rounded-lg text-sm bg-gray-700 hover:bg-gray-600"
                 >
-                  Cancel
+                  Abbrechen
                 </button>
                 <button
                   type="submit"
                   disabled={savingAdd || !name || !role}
                   className="px-4 py-2 rounded-lg text-sm bg-gradient-to-r from-emerald-600 to-teal-600 disabled:opacity-40"
                 >
-                  {savingAdd ? "Adding..." : "Add"}
+                  {savingAdd ? "Wird hinzugefügt..." : "Hinzufügen"}
                 </button>
               </div>
             </form>
@@ -410,7 +415,9 @@ export default function EmployeesPage() {
       {isEditing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md bg-gradient-to-br from-gray-950 to-emerald-950 border border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-semibold mb-4">Edit Employee</h3>
+            <h3 className="text-sm font-semibold mb-4">
+              Mitarbeiter bearbeiten
+            </h3>
             <form onSubmit={saveEdit} className="space-y-3">
               <input
                 value={editName}
@@ -422,7 +429,8 @@ export default function EmployeesPage() {
                 onChange={(e) => setEditRole(e.target.value)}
                 className="w-full px-3 py-2.5 text-sm rounded-lg bg-gray-800 border border-gray-700 text-white"
               >
-                <option value="">Select role</option>
+                <option value="">Rolle auswählen</option>
+
                 {ROLE_ORDER.map((r) => (
                   <option key={r} value={r}>
                     {r}
@@ -435,14 +443,14 @@ export default function EmployeesPage() {
                   onClick={closeEdit}
                   className="px-4 py-2 rounded-lg text-sm bg-gray-700 hover:bg-gray-600"
                 >
-                  Cancel
+                  Abbrechen
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit}
                   className="px-4 py-2 rounded-lg text-sm bg-gradient-to-r from-emerald-600 to-teal-600"
                 >
-                  {savingEdit ? "Saving..." : "Save"}
+                  {savingEdit ? "Wird gespeichert..." : "Speichern"}
                 </button>
               </div>
             </form>

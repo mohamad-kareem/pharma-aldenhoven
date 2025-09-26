@@ -8,9 +8,10 @@ const MedicineSchema = new mongoose.Schema(
     employeesRequired: { type: Number, default: 0, min: 0 },
     difficulty: {
       type: String,
-      enum: ["Low", "Medium", "High"],
-      default: "Low",
+      enum: ["Niedrig", "Mittel", "Hoch"],
+      default: "Niedrig",
     },
+
     ingredients: [{ type: String, trim: true }],
     description: { type: String, required: true },
     status: { type: String, default: "Active Production" },

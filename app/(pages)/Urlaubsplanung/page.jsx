@@ -692,8 +692,8 @@ export default function UrlaubsplanungPage() {
                                             : "text-gray-700";
                                         return (
                                           <div
-                                            key={type || "clear"}
-                                            className={`px-3 py-2 cursor-pointer hover:opacity-80 ${colorClass} border-b border-gray-200 last:border-b-0`}
+                                            key={type || "Löschen"}
+                                            className={`px-3 py-2 cursor-pointer hover:opacity-90 ${colorClass} border-b border-gray-200 last:border-b-0`}
                                             onMouseDown={async () => {
                                               await saveAbsence(
                                                 emp._id,
@@ -703,12 +703,12 @@ export default function UrlaubsplanungPage() {
                                               setRangeStart({
                                                 empId: emp._id,
                                                 dateStr,
-                                                type: type || null, // allow null = clear
+                                                type: type || null, // allow null = Löschen
                                               });
                                               setActiveCell(null);
                                             }}
                                           >
-                                            {type === "" ? "Clear" : type}
+                                            {type === "" ? "Löschen" : type}
                                           </div>
                                         );
                                       }

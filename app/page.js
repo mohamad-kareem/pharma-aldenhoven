@@ -155,7 +155,7 @@ export default function LandingPage() {
         </div>
 
         {/* Hero content */}
-        <div className="relative z-10 text-center text-white px-4 py-40 md:py-40 max-w-6xl mx-auto">
+        <div className="relative z-10 text-center text-white px-4 py-50 md:py-45 max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -218,7 +218,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="relative py-20 px-4 sm:px-6 bg-gradient-to-b from-green-950 to-green-900">
+      <section className="relative py-20 px-4 sm:px-6 ">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 40 }}

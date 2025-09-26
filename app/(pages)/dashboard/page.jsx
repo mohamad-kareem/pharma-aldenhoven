@@ -189,7 +189,7 @@ export default function Dashboard() {
         <div className="w-full max-w-[95vw] xl:max-w-[1300px] 2xl:max-w-[1850px] mx-auto px-4">
           <div className="flex justify-between items-center h-14">
             <div className="flex items-center">
-              <div className="bg-gradient-to-r from-green-800 to-gray-700 p-1.5 rounded-lg">
+              <div className="bg-gradient-to-r from-green-800 to-green-600 p-1.5 rounded-lg">
                 <LayoutGrid className="h-4 w-4 sm:h-5 sm:w-5 text-gray-200" />
               </div>
               <motion.header
@@ -200,7 +200,7 @@ export default function Dashboard() {
               >
                 <h1 className="text-base md:text-lg lg:text-xl font-bold">
                   Willkommen,{" "}
-                  <span className="bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-green-500 to-green-400 bg-clip-text text-transparent">
                     {firstName}
                   </span>
                 </h1>

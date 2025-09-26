@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Leaf } from "lucide-react";
+import { Leaf, Loader } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 export default function ResetPasswordPage({ token }) {
   const [password, setPassword] = useState("");
@@ -20,7 +21,7 @@ export default function ResetPasswordPage({ token }) {
     setMessage("");
 
     if (password !== confirm) {
-      setError("Passwords do not match");
+      setError("Passwörter stimmen nicht überein");
       return;
     }
 
@@ -39,14 +40,14 @@ export default function ResetPasswordPage({ token }) {
         setTimeout(() => router.push("/signin"), 2000);
       }
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] px-4">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-900 to-emerald-950 px-4">
       {/* Logo */}
       <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
         <Link href="/" className="flex items-center">
@@ -61,68 +62,141 @@ export default function ResetPasswordPage({ token }) {
         </Link>
       </div>
 
-      {/* Card */}
-      <div className="relative bg-white/95 backdrop-blur-md w-full max-w-sm sm:max-w-md rounded-2xl shadow-2xl border border-green-100 p-6 sm:p-8">
+      {/* Background glow effects matching dashboard */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-60 h-60 bg-emerald-500/10 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-60 h-60 bg-teal-400/10 rounded-full blur-2xl"></div>
+      </div>
+
+      {/* Animated background blobs */}
+      <div className="absolute -top-32 -left-32 w-72 h-72 bg-emerald-500/10 rounded-full mix-blend-screen filter blur-2xl opacity-30 animate-blob"></div>
+      <div className="absolute top-1/2 -right-32 w-72 h-72 bg-teal-400/10 rounded-full mix-blend-screen filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
+      <div className="absolute -bottom-32 left-1/2 w-72 h-72 bg-green-500/10 rounded-full mix-blend-screen filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
+
+      {/* Card - matching dashboard design */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative bg-gradient-to-br from-gray-900 to-emerald-950 backdrop-blur-md w-full max-w-sm sm:max-w-md rounded-2xl shadow-2xl border border-gray-700 p-6 sm:p-8"
+      >
         <div className="text-center mb-6">
           <div className="flex justify-center mb-3">
-            <div className="bg-green-100 text-[var(--color-primary)] p-3 rounded-full shadow-sm">
+            <div className="bg-gradient-to-r from-emerald-600 to-green-600 text-white p-3 rounded-full shadow-lg">
               <Leaf className="w-6 h-6" />
             </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Reset Password
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            Passwort zurücksetzen
           </h1>
-          <p className="text-gray-500 text-sm sm:text-base mt-1">
-            Enter your new password below
+          <p className="text-gray-400 text-sm sm:text-base mt-1">
+            Geben Sie unten Ihr neues Passwort ein
           </p>
         </div>
 
+        {/* Error and Success Messages */}
         {error && (
-          <div className="mb-4 text-center bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-lg text-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-4 text-center bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-2 rounded-lg text-sm"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
         {message && (
-          <div className="mb-4 text-center bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-4 text-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-2 rounded-lg text-sm"
+          >
             {message}
-          </div>
+          </motion.div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="password"
-            placeholder="New Password"
-            className="w-full border border-gray-200 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[var(--color-primary)] shadow-sm"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            className="w-full border border-gray-200 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[var(--color-primary)] shadow-sm"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            required
-          />
-          <button
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Neues Passwort
+            </label>
+            <input
+              type="password"
+              placeholder="Geben Sie Ihr neues Passwort ein"
+              className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition shadow-sm placeholder-gray-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Passwort bestätigen
+            </label>
+            <input
+              type="password"
+              placeholder="Bestätigen Sie Ihr neues Passwort"
+              className="w-full border border-gray-600 bg-gray-800 text-white p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition shadow-sm placeholder-gray-500"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <motion.button
             type="submit"
             disabled={loading}
-            className="w-full bg-[var(--color-primary)] hover:bg-green-900 text-white font-semibold py-2.5 sm:py-3 rounded-lg shadow-md disabled:opacity-70"
+            whileHover={!loading ? { scale: 1.02 } : {}}
+            whileTap={!loading ? { scale: 0.98 } : {}}
+            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 disabled:from-emerald-800 disabled:to-green-800 text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
           >
-            {loading ? "Resetting..." : "Reset Password"}
-          </button>
+            {loading ? (
+              <>
+                <Loader className="w-4 h-4 animate-spin" />
+                Wird zurückgesetzt...
+              </>
+            ) : (
+              "Passwort zurücksetzen"
+            )}
+          </motion.button>
         </form>
 
         <div className="mt-5 text-center">
           <Link
             href="/signin"
-            className="text-xs sm:text-sm text-[var(--color-primary)] font-medium hover:underline"
+            className="text-xs sm:text-sm text-emerald-400 font-medium hover:text-emerald-300 transition-colors hover:underline"
           >
-            Back to Sign In
+            Zurück zur Anmeldung
           </Link>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Tailwind keyframes for animated blobs */}
+      <style jsx>{`
+        .animate-blob {
+          animation: blob 8s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+        @keyframes blob {
+          0%,
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -12,14 +12,14 @@ export async function POST(req) {
     const user = await User.findOne({ email });
     if (!user) {
       return NextResponse.json(
-        { error: "No user found with this email" },
+        { error: "Kein Benutzer mit dieser E-Mail gefunden" },
         { status: 400 }
       );
     }
 
-    // Generate token & expiry
+    // Token & Ablauf generieren
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 min
+    const resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 Minuten
 
     user.resetToken = resetToken;
     user.resetTokenExpiry = resetTokenExpiry;
@@ -27,9 +27,9 @@ export async function POST(req) {
 
     const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
 
-    // Send Email
+    // E-Mail versenden
     const transporter = nodemailer.createTransport({
-      service: "gmail", // or SMTP settings
+      service: "gmail", // oder SMTP-Einstellungen
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -39,17 +39,18 @@ export async function POST(req) {
     await transporter.sendMail({
       to: user.email,
       from: process.env.EMAIL_USER,
-      subject: "Password Reset Request",
+      subject: "Passwort-Zurücksetzung",
       html: `
-        <p>Hello ${user.name},</p>
-        <p>You requested a password reset. Click the link below to reset your password:</p>
+        <p>Hallo ${user.name},</p>
+        <p>Sie haben eine Zurücksetzung Ihres Passworts angefordert. Klicken Sie auf den folgenden Link, um Ihr Passwort zurückzusetzen:</p>
         <a href="${resetUrl}">${resetUrl}</a>
-        <p>This link is valid for 15 minutes.</p>
+        <p>Dieser Link ist 15 Minuten gültig.</p>
       `,
     });
 
     return NextResponse.json({
-      message: "Password reset link sent to your email",
+      message:
+        "Ein Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail gesendet",
     });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });

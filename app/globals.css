@@ -18,11 +18,11 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #065f46; /* dark green */
+  background-color: #388e3c; /* dark green */
   border-radius: 9999px;
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #065f46 transparent;
+  scrollbar-color: #388e3c transparent;
 }

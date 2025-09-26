@@ -1102,7 +1102,7 @@ export default function SchichtplanPage() {
                 )}
 
                 {/* RIGHT: Lines */}
-                <div className="flex-1 overflow-x-auto">
+                <div className="flex-1 overflow-x-auto custom-scrollbar">
                   <table className="w-full border-collapse table-fixed">
                     <thead>
                       <tr>

@@ -7,11 +7,21 @@ import ActivityTracker from "@/app/(components)/ActivityTracker";
 export const metadata = {
   title: "Pharma Aldenhoven",
   description: "Admin Portal - Pharma Aldenhoven",
+  icons: {
+    icon: "/logo2.png", // for browser tab
+    shortcut: "/logo2.png", // for bookmarks
+    apple: "/logo2.png", // iOS homescreen icon
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* 👇 Add manifest + theme color */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0F4C81" />
+      </head>
       <body>
         <Providers>
           <div className="min-h-screen relative">

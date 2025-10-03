@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useMemo, useState, useLayoutEffect } from "react";
 import React from "react";
-import { Plus, Minus, Printer } from "lucide-react";
+import { Plus, Minus, Printer, StickyNote } from "lucide-react";
 import { createPortal } from "react-dom";
 import NavigationTabs from "@/app/(components)/NavigationTab";
+import NotesModal from "@/app/(components)/NotesModal";
+
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
@@ -331,7 +333,7 @@ export default function SchichtplanPage() {
   const [absences, setAbsences] = useState([]);
   const [rollenCollapsed, setRollenCollapsed] = useState(true);
   const SPECIAL_SHIFT = "__SPECIAL__";
-
+  const [notesOpen, setNotesOpen] = useState(false);
   useEffect(() => {
     fetch("/api/employees")
       .then((r) => r.json())
@@ -889,23 +891,31 @@ export default function SchichtplanPage() {
             <h2 className="text-xs sm:text-lg font-bold text-gray-800 leading-tight">
               KW {week} / {year}
             </h2>
-            <div className="flex items-center ">
+
+            <div className="flex items-center gap-2">
+              {/* Printer button */}
               <button
                 onClick={handlePrint}
-                className="hover:bg-green-100 text-white font-medium py-1.5 px-2 rounded text-xs flex items-center gap-1 cursor-pointer mr-1 bg-green-50 hover:border-green-300 transition-colors"
+                className="hover:bg-green-300 bg-green-100 text-xs px-2 py-1.5 rounded flex items-center gap-1 border border-green-200 transition-colors"
               >
-                <Printer className="w-4 h-4 text-green-500 font-bold" />
+                <Printer className="w-4 h-4 text-green-600" />
               </button>
-              <div className="flex items-center gap-1 rounded-sm">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="border border-gray-300 rounded-sm px-1 py-0.5 text-[10px] sm:text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-[110px] sm:w-auto"
-                  />
-                </div>
-              </div>
+
+              {/* Notes button */}
+              <button
+                onClick={() => setNotesOpen(true)}
+                className="hover:bg-yellow-300 bg-yellow-100 border border-yellow-200 text-yellow-700 text-xs px-2 py-1.5 rounded flex items-center gap-1 transition-colors"
+              >
+                <StickyNote className="w-4 h-4" />
+              </button>
+
+              {/* Date input */}
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="border border-gray-300 rounded-sm px-1 py-0.5 text-[10px] sm:text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
           </div>
 
@@ -1022,7 +1032,6 @@ export default function SchichtplanPage() {
               </div>
             </div>
           </div>
-
           {/* Loop over Früh / Spät / Nacht */}
           {SHIFTS.map(({ name, time }) => (
             <div
@@ -1210,6 +1219,14 @@ export default function SchichtplanPage() {
               </div>
             </div>
           ))}
+          {notesOpen && (
+            <NotesModal
+              date={date}
+              week={week}
+              year={year}
+              onClose={() => setNotesOpen(false)}
+            />
+          )}
         </div>
       </div>
     </div>

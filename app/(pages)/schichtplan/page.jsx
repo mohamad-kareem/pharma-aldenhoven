@@ -1,7 +1,14 @@
 "use client";
 import { useEffect, useMemo, useState, useLayoutEffect } from "react";
 import React from "react";
-import { Plus, Minus, Printer, StickyNote } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  Printer,
+  StickyNote,
+  ScrollText,
+  Bell,
+} from "lucide-react";
 import { createPortal } from "react-dom";
 import NavigationTabs from "@/app/(components)/NavigationTab";
 import NotesModal from "@/app/(components)/NotesModal";
@@ -334,11 +341,18 @@ export default function SchichtplanPage() {
   const [rollenCollapsed, setRollenCollapsed] = useState(true);
   const SPECIAL_SHIFT = "__SPECIAL__";
   const [notesOpen, setNotesOpen] = useState(false);
+  const [notes, setNotes] = useState([]);
   useEffect(() => {
     fetch("/api/employees")
       .then((r) => r.json())
       .then(setEmployees);
   }, []);
+
+  useEffect(() => {
+    fetch(`/api/notes?date=${date}`)
+      .then((r) => r.json())
+      .then(setNotes);
+  }, [date]);
 
   useEffect(() => {
     fetch(`/api/schedules?date=${date}`)
@@ -902,11 +916,19 @@ export default function SchichtplanPage() {
               </button>
 
               {/* Notes button */}
+              {/* Notes button */}
               <button
                 onClick={() => setNotesOpen(true)}
-                className="hover:bg-yellow-300 bg-yellow-100 border border-yellow-200 text-yellow-700 text-xs px-2 py-1.5 rounded flex items-center gap-1 transition-colors"
+                className="relative hover:bg-yellow-300 bg-yellow-100 border border-yellow-200 text-yellow-700 text-xs px-2 py-1.5 rounded flex items-center gap-1 transition-colors"
               >
-                <StickyNote className="w-4 h-4" />
+                <Bell className="w-4 h-4 text-yellow-800" />
+
+                {/* 🔔 Notification badge */}
+                {notes.length > 0 && (
+                  <span className="absolute -top-3 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 shadow">
+                    {notes.length}
+                  </span>
+                )}
               </button>
 
               {/* Date input */}
@@ -1225,6 +1247,7 @@ export default function SchichtplanPage() {
               week={week}
               year={year}
               onClose={() => setNotesOpen(false)}
+              onNotesChanged={(updatedNotes) => setNotes(updatedNotes)}
             />
           )}
         </div>
